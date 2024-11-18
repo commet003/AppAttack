@@ -1038,21 +1038,19 @@ update_metasploit() {
 
 # Function to update Wapiti
 update_wapiti() {
-    echo -e "${YELLOW}Updating Wapiti...${NC}"
-    
-    # Check if pip3 is available and Wapiti was installed via pip
-    if command -v pip3 &> /dev/null; then
-        echo -e "${CYAN}Updating Wapiti using pip3...${NC}"
-        pip3 install --upgrade wapiti3
+    if ! command -v wapiti &> /dev/null; then
+        sudo apt install -y wapiti > /dev/null 2>&1
+        log_message "Wapiti installed"
     else
-        # If pip3 is not available, check if Wapiti was installed from source
-        if [ -d "$HOME/wapiti" ]; then
-            echo -e "${CYAN}Updating Wapiti from source...${NC}"
-            cd "$HOME/wapiti" || { echo -e "${RED}Failed to change directory to Wapiti source.${NC}"; return 1; }
-            git pull origin master
-            python3 setup.py install
+        current_version=$(dpkg-query -W -f='${Version}' wapiti 2>/dev/null)
+        latest_version=$(apt-cache policy wapiti | grep 'Candidate:' | awk '{print $2}')
+
+        if [ "$current_version" != "$latest_version" ]; then
+            echo -e "${MAGENTA}Updating Wapiti...${NC}"
+            sudo apt install -y wapiti > /dev/null 2>&1
+            log_message "Wapiti updated to version $latest_version"
         else
-            echo -e "${RED}Wapiti installation not found or not supported update method.${NC}"
+            log_message "Wapiti is up-to-date (version $current_version)"
         fi
     fi
 }
@@ -1341,30 +1339,17 @@ install_metasploit() {
 
 # Function to install Wapiti (a vulnerability scanner) if not already installed
 install_wapiti() {
-    #echo -e "${YELLOW}Checking for Wapiti installation...${NC}"
-
-    # Check if Wapiti is already installed
-    if command -v wapiti3 &> /dev/null; then
-        echo -e "${GREEN}Wapiti is already installed.${NC}"
-        return
-    fi
-
-    # Try to install Wapiti using pip3
-    if command -v pip3 &> /dev/null; then
-        #echo -e "${CYAN}Installing Wapiti using pip3...${NC}"
-        pip3 install wapiti3 --no-warn-script-location --disable-pip-version-check > /dev/null 2>&1 || true
-    else
-        echo -e "${RED}pip3 not found. Trying to install Wapiti from source...${NC}"
-
-        # Clone the Wapiti repository and install from source
-        if [ ! -d "$HOME/wapiti" ]; then
-            #echo -e "${CYAN}Cloning Wapiti repository...${NC}"
-            git clone https://github.com/andresriancho/wapiti.git "$HOME/wapiti" > /dev/null 2>&1
+    if ! command -v wapiti &> /dev/null; then
+        echo -e "${CYAN}Installing Wapiti...${NC}"
+        sudo apt update && sudo apt install -y wapiti
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Wapiti installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install Wapiti.${NC}"
+            exit 1
         fi
-
-        #echo -e "${CYAN}Installing Wapiti from source...${NC}"
-        cd "$HOME/wapiti" || return
-        python3 setup.py install > /dev/null 2>&1 || true
+    else
+        echo -e "${GREEN}Wapiti is already installed.${NC}"
     fi
 }
 
@@ -1582,9 +1567,14 @@ main() {
     check_updates
     
     # Ask if the user wants to output to a file
+       # Ask if the user wants to output results to a file
     read -p "Do you want to output results to a file? (y/n): " output_to_file
     if [[ "$output_to_file" == "y" ]]; then
         read -p "Enter the output file path: " output
+        # Create the directory if it doesn't exist
+        mkdir -p "$(dirname "$output")"
+        # Create or clear the output file
+        > "$output"
     fi
     
     while true; do
