@@ -18,4 +18,18 @@
 
 
 ## For Devs
-You're better off running ./main for testing additions to the tool. Otherwise you have to rebuild it each time to test. 
+You're better off running ./main for testing additions to the tool. Otherwise you have to rebuild it each time to test. Make sure you also reinstall to make sure the install process isn't broken. 
+
+### To reinstall 
+1. **Remove the original installation**:
+   > *This isn't strictly necessary all the time, but it's just simpler to always do it.*
+   ```bash
+   sudo rm -rf /opt/appAttack_toolkit
+   sudo rm /usr/local/bin/appAttack_toolkit
+
+2. **Reinstall**:
+   ```bash
+   sudo ./install.sh
+   ```
+
+
