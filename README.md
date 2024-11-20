@@ -5,7 +5,7 @@
    ```
 2. **Move into the appAttack_tools directory**:
    ```bash
-   cd appAttack_tools
+   cd AppAttack/appAttack_tools
    ```
 3. **Run the install script as sudo**:
    ```bash
