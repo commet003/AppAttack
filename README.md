@@ -1,8 +1,17 @@
-# AppAttack
+# AppAttack Toolkit
 
-- The Learning resources are available under the Documentation Branch.
-- All the Company Tasks for T1 2024 are under Company Task Branch.
-- All the vulnerabilities ready for verification are under the Workflow Verify Finding Branch.
-- All the verified vulnerabilities needing minor changes are under the Workflow Ensure Presentability Branch.
-- All the verified vulnerabilities part of the Mid-Trimester Report are under the Workflow Ready for Final Report Branch.
+## Installation
 
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Ed-ward-Harris/appAttack_test.git
+   cd appAttack_test
+   ```
+2. **Run the install script as sudo**:
+```bash
+   sudo ./install.sh
+```
+3. **Start the Application: Once installed, you can run the toolkit using**:
+```bash
+   appAttack_toolkit
+```
