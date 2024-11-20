@@ -2,20 +2,19 @@
 1. **Clone the Repository**:
    ```bash
    git clone -b Tool-Development git@github.com:Siwei502/AppAttack.git
-   cd appAttack_test
    ```
 2. **Move into the appAttack_tools directory**:
    ```bash
    cd appAttack_tools
    ```
 3. **Run the install script as sudo**:
-```bash
+   ```bash
    sudo ./install.sh
-```
+   ```
 4. **Start the Application: Once installed, you can run the toolkit using**:
-```bash
+   ```bash
    appAttack_toolkit
-```
+   ```
 
 
 ## For Devs
