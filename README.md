@@ -1,7 +1,7 @@
 ## Installation For Users
 1. **Clone the Repository**:
    ```bash
-   git clone -b Tool-Development git@github.com:Siwei502/AppAttack.git
+   git clone -b Tool-Development https://github.com/Siwei502/AppAttack.git
    ```
 2. **Move into the appAttack_tools directory**:
    ```bash
