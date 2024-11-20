@@ -11,7 +11,7 @@
    ```bash
    sudo ./install.sh
    ```
-4. **Start the Application: Once installed, you can run the toolkit using**:
+4. **You can now start the tool using**:
    ```bash
    appAttack_toolkit
    ```
