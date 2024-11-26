@@ -81,8 +81,9 @@ main() {
         case $main_choice in
             1) handle_penetration_testing_tools ;;
             2) handle_secure_code_review_tools ;;
-            3) handle_step_by_step_guide ;;
-            4) echo -e "${YELLOW}Exiting...${NC}"
+			3) handle_iot_security_tools ;;
+            4) handle_step_by_step_guide ;;
+            5) echo -e "${YELLOW}Exiting...${NC}"
                 log_message "Script ended"
             exit 0 ;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}"

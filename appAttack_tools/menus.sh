@@ -19,8 +19,9 @@ display_main_menu() {
     echo -e "${BYellow}╚════════════════════════════════╝${NC}"
     echo -e "${BCyan}1)${NC} ${White}Penetration Testing Tools${NC}"
     echo -e "${BCyan}2)${NC} ${White}Secure Code Review Tools${NC}"
-    echo -e "${BCyan}3)${NC} ${White}Step by Step Guide${NC}"
-    echo -e "${BCyan}4)${NC} ${White}Exit${NC}"
+	echo -e "${BCyan}3)${NC} ${White}IoT Security Tools${NC}"
+    echo -e "${BCyan}4)${NC} ${White}Step by Step Guide${NC}"
+    echo -e "${BCyan}5)${NC} ${White}Exit${NC}"
     echo -e "${BYellow}╚════════════════════════════════╝${NC}"
 }
 
@@ -69,6 +70,18 @@ display_secure_code_review_tools_menu() {
     echo -e "${BYellow}╚════════════════════════════════════════════╝${NC}"
 }
 
+# Function to display IoT Tools menu
+display_iot_security_tools_menu() {
+    echo -e "\n${BYellow}╔══════════════════════════════════════════╗${NC}"
+    echo -e "${BYellow}║            IoT Security Tools            ║${NC}"
+    echo -e "${BYellow}╚══════════════════════════════════════════╝${NC}"
+    echo -e "${BCyan}1)${NC} ${White}Needs Assigning${NC}"
+    echo -e "${BCyan}2)${NC} ${White}Needs Assigning${NC}"
+    echo -e "${BCyan}3)${NC} ${White}Needs Assigning${NC}"
+    echo -e "${BCyan}4)${NC} ${White}Needs Assigning${NC}"
+    echo -e "${BCyan}5)${NC} ${White}Go Back${NC}"
+}
+
 # Function to display Step by Step Guide menu
 display_step_by_step_guide_menu() {
     echo -e "\n${BYellow}╔════════════════════════════════════════════╗${NC}"
@@ -76,7 +89,8 @@ display_step_by_step_guide_menu() {
     echo -e "${BYellow}╚════════════════════════════════════════════╝${NC}"
     echo -e "${BCyan}1)${NC} ${White}Learn about Pen Testing tools${NC}"
     echo -e "${BCyan}2)${NC} ${White}Learn about Secure code review tools${NC}"
-    echo -e "${BCyan}3)${NC} ${White}Go Back${NC}"
+	echo -e "${BCyan}3)${NC} ${White}Learn about IoT Security tools${NC}"
+    echo -e "${BCyan}4)${NC} ${White}Go Back${NC}"
     echo -e "${BYellow}╚════════════════════════════════════════════╝${NC}"
 }
 
@@ -108,6 +122,18 @@ display_step_by_step_guide_secure_code_review(){
     echo -e "${MAGENTA}4) bandit: Security linter for Python code${NC}"
     echo -e "${CYAN}5) SonarQube: Continuous inspection of code quality and security${NC}"
     echo -e "${YELLOW}6) Go Back"
+  #  display_asterisk
+    
+}
+
+display_step_by_step_guide_iot_security_tools(){
+    
+    echo -e "${YELLOW}IoT Security Tools:${NC}"
+    echo -e "${CYAN}1) Needs Assigning${NC}"
+    echo -e "${MAGENTA}2) Needs Assigning${NC}"
+    echo -e "${CYAN}3) Needs Assigning${NC}"
+    echo -e "${MAGENTA}4) Needs Assigning${NC}"
+    echo -e "${YELLOW}5) Go Back"
   #  display_asterisk
     
 }
@@ -153,8 +179,25 @@ handle_secure_code_review_tools() {
         esac
     done
 }
-# Function for handling the step by step guide
 
+# Function for IoT Security Tools
+handle_iot_security_tools() {
+    local choice
+    while true; do
+        display_iot_security_tools_menu
+        read -p "Choose an option: " choice
+        case $choice in
+            1) run_assigniot ;;
+            2) run_assigniot ;;
+            3) run_assigniot ;;
+            4) run_assigniot ;;
+            5) break ;;
+            *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
+        esac
+    done
+}
+
+# Function for handling the step by step guide
 handle_step_by_step_guide(){
     
     local choice
@@ -169,7 +212,8 @@ handle_step_by_step_guide(){
             
             1) handle_step_by_step_guide_Pentest;;
             2) handle_step_by_step_guide_SCR;;
-            3) break ;;
+			3) handle_step_by_step_guide_IoT;;
+            4) break ;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
             
         esac
@@ -232,4 +276,31 @@ handle_step_by_step_guide_Pentest(){
         esac
         
     done
+}
+
+handle_step_by_step_guide_IoT(){
+    
+    local choice
+    
+    while true; do
+        
+        display_step_by_step_guide_iot_security_tools
+        
+        read -p "Choose an option: " choice
+        
+        case $choice in
+            
+            1) ;;
+            2) ;;
+            3) ;;
+            4) ;;
+            5) break;;
+            *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
+            
+        esac
+        
+    done
+    
+    
+    
 }
