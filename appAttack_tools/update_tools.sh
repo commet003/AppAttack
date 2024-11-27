@@ -14,6 +14,7 @@ check_updates() {
     update_owasp_zap
     update_nikto
     update_nmap
+    update_ncrack
     update_john
     update_sqlmap
     update_metasploit
@@ -33,6 +34,7 @@ check_updates() {
         update_owasp_zap
         update_nikto
         update_nmap
+        update_ncrack
         update_john
         update_sqlmap
         update_metasploit
@@ -106,6 +108,24 @@ update_nmap() {
             log_message "Nmap updated to version $latest_version"
         else
             log_message "Nmap is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update Ncrack (a network exploration and security auditing tool)
+update_ncrack() {
+    if ! command -v ncrack &> /dev/null; then
+        sudo apt install -y ncrack > /dev/null 2>&1
+        log_message "Ncrack installed"
+    else
+        # Check the installed version against the latest available version
+        current_version=$(ncrack --version | head -n 1 | awk '{print $3}')
+        latest_version=$(apt-cache policy ncrack | grep 'Candidate:' | awk '{print $2}')
+        if [ "$current_version" != "$latest_version" ]; then
+            sudo apt install -y ncrack > /dev/null 2>&1
+            log_message "Ncrack updated to version $latest_version"
+        else
+            log_message "Ncrack is up-to-date (version $current_version)"
         fi
     fi
 }

@@ -147,6 +147,22 @@ install_nmap() {
     fi
 }
 
+# Function to install Ncrack if not already installed
+install_ncrack() {
+    if ! command -v ncrack &> /dev/null; then
+        echo -e "${MAGENTA}Installing ncrack...${NC}"
+        sudo apt update && sudo apt install -y ncrack
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}ncrack installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install ncrack.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}ncrack is already installed.${NC}"
+    fi
+}
+
 # Function to install nikto
 install_nikto() {
     # Check if nikto is not installed
