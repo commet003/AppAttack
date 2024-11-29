@@ -42,6 +42,8 @@ main() {
     install_bandit
     # Check and install nmap
     install_nmap
+    # Check and install ncrack
+    install_ncrack
     # Check and install nikto
     install_nikto
     # Check and install legion

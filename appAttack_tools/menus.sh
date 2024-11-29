@@ -90,7 +90,7 @@ display_iot_security_tools_menu() {
     echo -e "${BCyan}13)${NC} ${White}Wireshark${NC}"
     echo -e "${BCyan}14)${NC} ${White}Yersinia${NC}"
     echo -e "${BCyan}15)${NC} ${White}Go Back${NC}"
-    echo -e "${BYellow}╚════════════════════════════════════════════╝${NC}"
+    echo -e "${BYellow}╚═══════════════════════════════════════════╝${NC}"
 }
 
 # Function to display Step by Step Guide menu
@@ -211,7 +211,7 @@ handle_iot_security_tools() {
             2) run_assigniot ;;
             3) run_assigniot ;;
             4) run_assigniot ;;
-            5) break ;;
+            15) break ;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
         esac
     done
