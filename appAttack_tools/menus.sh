@@ -168,7 +168,7 @@ handle_penetration_testing_tools() {
         display_penetration_testing_tools_menu
         read -p "Choose an option: " choice
         case $choice in
-            1) run_nmap ;;
+            1) run_nmap "false" ;;
             2) run_nikto ;;
             3) run_legion ;;
             4) run_owasp_zap ;;
@@ -211,6 +211,16 @@ handle_iot_security_tools() {
             2) run_assigniot ;;
             3) run_assigniot ;;
             4) run_assigniot ;;
+            5) run_assigniot ;;
+            6) run_assigniot ;;
+            7) run_nmap "true" ;;
+            8) run_assigniot ;;
+            9) run_assigniot ;;
+            10) run_assigniot ;;
+            11) run_assigniot ;;
+            12) run_assigniot ;;
+            13) run_assigniot ;;
+            14) run_assigniot ;;
             15) break ;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
         esac

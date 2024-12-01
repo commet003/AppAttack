@@ -3,13 +3,25 @@
 
 # Function to run nmap
 run_nmap(){
+    isIoTUsage=$1
     output_file="${output}_nmap"
     read -p "Enter URL or IP address to scan: " url
     if [[ "$output_to_file" == "y" ]]; then
-        nmap_output=$(nmap -oN "$output_file" "$url")
+        if [[ "$isIoTUsage" == "true" ]]; then
+            nmap_output=$(nmap -A "$url" -oN "$output_file" )
+            echo IoT
+        else
+            nmap_output=$(nmap -oN "$output_file" "$url")
+            echo Not IoT
+        fi
     else
-        nmap_output=$(nmap "$url")
-        nmap "$url"
+        if [[ "$isIoTUsage" == "true" ]]; then
+            nmap_output=$(nmap -A "$url")
+            nmap -A "$url"
+        else
+            nmap_output=$(nmap "$url")
+            nmap "$url"
+        fi
     fi
     generate_ai_insights "$nmap_output"
     echo -e "${GREEN} Nmap Operation completed.${NC}"
