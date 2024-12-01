@@ -3,16 +3,22 @@
 
 # Function to run nmap
 run_nmap(){
-    isIoTUsage=$1
-    output_file="${output}_nmap"
+    OUTPUT_DIR=$1
+    isIoTUsage=$2
+
+    output_file="${OUTPUT_DIR}/nmap_output.txt"
+
+
+    # Prompt user for URL or IP address
     read -p "Enter URL or IP address to scan: " url
+
+
+    # Handle file output and IoT usage
     if [[ "$output_to_file" == "y" ]]; then
         if [[ "$isIoTUsage" == "true" ]]; then
-            nmap_output=$(nmap -A "$url" -oN "$output_file" )
-            echo IoT
+            nmap_output=$(nmap -A "$url" -oN "$output_file")
         else
             nmap_output=$(nmap -oN "$output_file" "$url")
-            echo Not IoT
         fi
     else
         if [[ "$isIoTUsage" == "true" ]]; then
@@ -23,13 +29,16 @@ run_nmap(){
             nmap "$url"
         fi
     fi
+
+    # Call the generate_ai_insights function with the Nmap output
     generate_ai_insights "$nmap_output"
-    echo -e "${GREEN} Nmap Operation completed.${NC}"
+    echo -e "${GREEN}Nmap Operation completed.${NC}"
 }
 
 # Function to run Bandit
 run_bandit() {
-    output_file="${output}_bandit.txt"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/bandit_output.txt"
     read -p "Enter the directory to scan: " directory
 
     # Capture the output of the Bandit command
@@ -47,7 +56,8 @@ run_bandit() {
 
 # Function to run SonarQube
 run_sonarqube() {
-    output_file="${output}_sonarqube"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/sonarqube_output.txt"
 
     # Check if SonarQube Docker container is already running or exists
     if sudo docker ps -a --format '{{.Names}}' | grep -w "sonarqube" > /dev/null; then
@@ -83,12 +93,13 @@ run_sonarqube() {
 
 # Function to run Nikto
 run_nikto() {
-    output_file="${output}_nikto"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/nikto_output.txt"
     read -p "Enter URL and port to scan (Example: http://localhost:4200): " url
     if [[ "$output_to_file" == "y" ]]; then
         read -p "Enter the output format (txt, html, xml): " format
         nikto_output=$(nikto -h "$url" -o "$output_file" -Format "$format")
-    echo "$nikto_output" > "$output"
+    echo "$nikto_output" > "$output_file"
     else
         nikto_output=$(nikto -h "$url")
         nikto -h "$url"
@@ -101,11 +112,12 @@ run_nikto() {
 
 # Function to run LEGION
 run_legion() {
-    output_file="${output}_legion"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/legion_output.txt"
 
     if [[ "$output_to_file" == "y" ]]; then
         # Show the output on the screen and capture it in a file using 'tee'
-        sudo legion | tee "$output_file.txt" > "$output_file_log.txt"
+        sudo legion | tee "$output_file" > "$output_file_log.txt"
         legion_output=$(cat "$output_file_log.txt")
     else
         # Just show the output on the screen and capture it in a variable
@@ -114,7 +126,7 @@ run_legion() {
     fi
 
     # Call the function to generate AI insights based on Legion output
-    generate_ai_insights "$legion_output" "$output_to_file" "$output_file.txt"
+    generate_ai_insights "$legion_output" "$output_to_file" "$output_file"
     echo -e "${GREEN} Legion operation completed.${NC}"
 
 
@@ -123,12 +135,13 @@ run_legion() {
 
 # Function to run OWASP ZAP
 run_owasp_zap() {
-    output_file="${output}_zap"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/zap_output.txt"
     read -p "Enter URL and port to scan (Example: http://localhost:4200): " url
 
     if [[ "$output_to_file" == "y" ]]; then
         # Show the output on the screen and capture it in a file using 'tee'
-        zap -quickurl $url | tee "$output_file.txt" > "$output_file_log.txt"
+        zap -quickurl $url | tee "$output_file" > "$output_file_log.txt"
         zap_output=$(cat "$output_file_log.txt")
     else
         # Just show the output on the screen and capture it in a variable
@@ -136,7 +149,7 @@ run_owasp_zap() {
         echo "$zap_output"
     fi
     # Call the function to generate AI insights based on OWASP ZAP output
-    generate_ai_insights "$zap_output" "$output_to_file" "$output_file.txt"
+    generate_ai_insights "$zap_output" "$output_to_file" "$output_file"
     echo -e "${GREEN} OWASP ZAP Operation completed.${NC}"
 
 
@@ -146,13 +159,15 @@ run_owasp_zap() {
 
 # Function to run John the Ripper
 run_john() {
-    output_file="${output}_john"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/john_output.txt"
+
     read -p "Enter the path to the password file to crack: " password_file
 
     if [[ "$output_to_file" == "y" ]]; then
         # Capture the output of john to a file
-        john --session="$output_file" "$password_file" > "$output_file.txt" 2>&1
-        john_output=$(cat "$output_file.txt")
+        john --session="$output_file" "$password_file" > "$output_file" 2>&1
+        john_output=$(cat "$output_file")
     else
         # Capture the output of john to a variable
         john_output=$(john "$password_file" 2>&1)
@@ -160,7 +175,7 @@ run_john() {
     fi
 
     # Call the function to generate AI insights based on John the Ripper output
-    generate_ai_insights "$john_output" "$output_to_file" "$output_file.txt"
+    generate_ai_insights "$john_output" "$output_to_file" "$output_file"
     echo -e "${GREEN} John the Ripper operation completed.${NC}"
 
 
@@ -169,12 +184,14 @@ run_john() {
 
 # Function to run sqlmap
 run_sqlmap() {
-    output_file="${output}_sqlmap"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/sqlmap_output.txt"
+
     read -p "Enter URL to scan (e.g., http://example.com/vuln.php?id=1): " url
 
     if [[ "$output_to_file" == "y" ]]; then
-        sqlmap -u "$url" --output-dir="$output_file" > "$output_file/sqlmap_output.txt" 2>&1
-        sqlmap_output=$(cat "$output_file/sqlmap_output.txt") # Capture the output
+        sqlmap -u "$url" --output-dir="$output_file" > "$output_file" 2>&1
+        sqlmap_output=$(cat "$output_file") # Capture the output
     else
         sqlmap_output=$(sqlmap -u "$url" 2>&1) # Capture output to variable
         echo "$sqlmap_output"
@@ -183,14 +200,16 @@ run_sqlmap() {
     echo -e "${GREEN} SQLmap operation completed.${NC}"
 
     # Call the function to generate AI insights based on sqlmap output
-    generate_ai_insights "$sqlmap_output" "$output_to_file" "$output_file/sqlmap_output.txt"
+    generate_ai_insights "$sqlmap_output" "$output_to_file" "$output_file"
 }
 
 # Function to run Metasploit
 run_metasploit() {
-    output_file="${output}_metasploit"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/metasploit_output.txt"
+
     if [[ "$output_to_file" == "y" ]]; then
-        sudo msfconsole | tee "$output_file.txt"
+        sudo msfconsole | tee "$output_file"
     else
         sudo msfconsole
     fi
@@ -199,7 +218,9 @@ run_metasploit() {
 
 # Function to run osv-scanner
 run_osv_scanner(){
-    output_file="${output}_osv_scanner"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/osvscanner_output.txt"
+
     read -p "Enter directory to scan: " directory
     source ~/.bashrc
     if [[ "$output_to_file" == "y" ]]; then
@@ -215,7 +236,8 @@ run_osv_scanner(){
 
 # Function to run snyk cli
 run_snyk(){
-    output_file="${output}_snyk"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/snyk_output.txt"
 
     # Check if Snyk is authenticated
 	snyk_auth_check=$(snyk auth --help | grep -i "You are authenticated")
@@ -277,7 +299,9 @@ run_snyk(){
 
 # Function to run Brakeman
 run_brakeman(){
-    output_file="${output}_brakeman"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/brakeman_output.txt"
+ 
     read -p "Enter directory to scan (current directory ./): " directory
     if [[ "$output_to_file" == "y" ]]; then
         brakeman_output=$(sudo brakeman "$directory" --force  -o "$output_file")
@@ -297,11 +321,18 @@ log_message() {
 
 # Function to run Wapiti
 run_wapiti() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/wapiti_output.txt"
+
     read -p "Enter the URL to scan: " url
-    read -p "Enter the output file path: " output_file
-    
-    # Run Wapiti scan
-    wapiti -u "$url" -o "$output_file"
+
+    if [[ "$output_to_file" == "y" ]]; then
+        # Run Wapiti scan
+        wapiti -u "$url" -o "$output_file"
+    else
+        # Run Wapiti scan
+        wapiti -u "$url"
+    fi
     
     echo -e "${GREEN}Wapiti scan completed. Results saved to $output_file.${NC}"
 }

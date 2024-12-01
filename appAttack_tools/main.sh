@@ -32,6 +32,7 @@ main() {
     if ! command -v go &> /dev/null; then
         install_go
     fi
+
     # Check and install osv-scanner
     install_osv_scanner
     # Check and install snyk cli
@@ -67,23 +68,22 @@ main() {
     check_updates
     
     # Ask if the user wants to output to a file
-       # Ask if the user wants to output results to a file
+    # Ask if the user wants to output results to a file
     read -p "Do you want to output results to a file? (y/n): " output_to_file
     if [[ "$output_to_file" == "y" ]]; then
-        read -p "Enter the output file path: " output
-        # Create the directory if it doesn't exist
-        mkdir -p "$(dirname "$output")"
-        # Create or clear the output file
-        > "$output"
+        read -p "Enter the output file path: " OUTPUT_DIR
+        if [[ ! -d "$OUTPUT_DIR" ]]; then
+            mkdir -p "$OUTPUT_DIR"
+        fi
     fi
     
     while true; do
         display_main_menu
         read -p "Choose an option: " main_choice
         case $main_choice in
-            1) handle_penetration_testing_tools ;;
-            2) handle_secure_code_review_tools ;;
-			3) handle_iot_security_tools ;;
+            1) handle_penetration_testing_tools "$OUTPUT_DIR" ;;
+            2) handle_secure_code_review_tools "$OUTPUT_DIR" ;;
+			3) handle_iot_security_tools "$OUTPUT_DIR" ;;
             4) handle_step_by_step_guide ;;
             5) echo -e "${YELLOW}Exiting...${NC}"
                 log_message "Script ended"

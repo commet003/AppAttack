@@ -163,19 +163,21 @@ display_step_by_step_guide_iot_security_tools(){
 
 # Function for Penetration Testing Tools
 handle_penetration_testing_tools() {
+    # Run Wapiti scan
+    local OUTPUT_DIR=$1
     local choice
     while true; do
         display_penetration_testing_tools_menu
         read -p "Choose an option: " choice
         case $choice in
-            1) run_nmap "false" ;;
-            2) run_nikto ;;
-            3) run_legion ;;
-            4) run_owasp_zap ;;
-            5) run_john ;;
-            6) run_sqlmap ;;
-            7) run_metasploit ;;
-	    8) run_wapiti ;;
+            1) run_nmap "$OUTPUT_DIR" "false" ;;
+            2) run_nikto "$OUTPUT_DIR" ;;
+            3) run_legion "$OUTPUT_DIR" ;;
+            4) run_owasp_zap "$OUTPUT_DIR" ;;
+            5) run_john "$OUTPUT_DIR" ;;
+            6) run_sqlmap "$OUTPUT_DIR" ;;
+            7) run_metasploit "$OUTPUT_DIR" ;;
+	        8) run_wapiti "$OUTPUT_DIR" ;;
             9) break ;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
         esac
@@ -184,16 +186,17 @@ handle_penetration_testing_tools() {
 
 # Function for Secure Code Review Tools
 handle_secure_code_review_tools() {
+    OUTPUT_DIR=$1
     local choice
     while true; do
         display_secure_code_review_tools_menu
         read -p "Choose an option: " choice
         case $choice in
-            1) run_osv_scanner ;;
-            2) run_snyk ;;
-            3) run_brakeman ;;
-            4) run_bandit ;;
-            5) run_sonarqube ;;
+            1) run_osv_scanner "$OUTPUT_DIR" ;;
+            2) run_snyk "$OUTPUT_DIR" ;;
+            3) run_brakeman "$OUTPUT_DIR" ;;
+            4) run_bandit "$OUTPUT_DIR" ;;
+            5) run_sonarqube "$OUTPUT_DIR" ;;
             6) break ;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
         esac
@@ -202,6 +205,7 @@ handle_secure_code_review_tools() {
 
 # Function for IoT Security Tools
 handle_iot_security_tools() {
+    local OUTPUT_DIR=$1
     local choice
     while true; do
         display_iot_security_tools_menu
@@ -213,7 +217,7 @@ handle_iot_security_tools() {
             4) run_assigniot ;;
             5) run_assigniot ;;
             6) run_assigniot ;;
-            7) run_nmap "true" ;;
+            7) run_nmap "$OUTPUT_DIR" "true" ;;
             8) run_assigniot ;;
             9) run_assigniot ;;
             10) run_assigniot ;;
@@ -330,7 +334,5 @@ handle_step_by_step_guide_IoT(){
         esac
         
     done
-    
-    
     
 }
