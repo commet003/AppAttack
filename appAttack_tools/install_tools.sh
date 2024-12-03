@@ -147,6 +147,22 @@ install_nmap() {
     fi
 }
 
+# Function to install Reaver if not already installed
+install_reaver() {
+    if ! command -v reaver &> /dev/null; then
+        echo -e "${MAGENTA}Installing nmap...${NC}"
+        sudo apt update && sudo apt install -y reaver
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}reaver installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install reaver.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}reaver is already installed.${NC}"
+    fi
+}
+
 # Function to install Ncrack if not already installed
 install_ncrack() {
     if ! command -v ncrack &> /dev/null; then

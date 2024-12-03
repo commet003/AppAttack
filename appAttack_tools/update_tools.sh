@@ -14,6 +14,7 @@ check_updates() {
     update_owasp_zap
     update_nikto
     update_nmap
+    update_reaver
     update_ncrack
     update_john
     update_sqlmap
@@ -34,6 +35,7 @@ check_updates() {
         update_owasp_zap
         update_nikto
         update_nmap
+        update_reaver
         update_ncrack
         update_john
         update_sqlmap
@@ -108,6 +110,24 @@ update_nmap() {
             log_message "Nmap updated to version $latest_version"
         else
             log_message "Nmap is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update Reaver (a network exploration and security auditing tool)
+update_reaver() {
+    if ! command -v reaver &> /dev/null; then
+        sudo apt install -y reaver > /dev/null 2>&1
+        log_message "Reaver installed"
+    else
+        # Check the installed version against the latest available version
+        current_version=$(reaver --version | head -n 1 | awk '{print $3}')
+        latest_version=$(apt-cache policy reaver | grep 'Candidate:' | awk '{print $2}')
+        if [ "$current_version" != "$latest_version" ]; then
+            sudo apt install -y reaver > /dev/null 2>&1
+            log_message "Reaver updated to version $latest_version"
+        else
+            log_message "Reaver is up-to-date (version $current_version)"
         fi
     fi
 }
