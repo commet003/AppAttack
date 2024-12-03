@@ -64,6 +64,12 @@ main() {
     install_sonarqube
     # Check and install wapiti
     install_wapiti
+    # Check and install tshark
+    install_tshark
+    # Check and install binwalk
+    install_binwalk
+    # Check and install hashcat
+    install_hashcat
     
     # Check for updates for the installed tools
     check_updates

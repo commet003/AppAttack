@@ -311,3 +311,51 @@ install_wapiti() {
         echo -e "${GREEN}Wapiti is already installed.${NC}"
     fi
 }
+
+# Function to install Tshark (Wireshark CLI), if it is not already installed
+install_tshark() {
+    if ! command -v tshark &> /dev/null; then
+        echo -e "${CYAN}Installing TShark...${NC}"
+        sudo apt update && sudo apt install -y tshark
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}TShark installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install TShark.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}TShark is already installed.${NC}"
+    fi
+}
+
+# Function to install Binwalk (Firmware analyzer), if it is not already installed
+install_binwalk() {
+    if ! command -v binwalk &> /dev/null; then
+        echo -e "${CYAN}Installing Binwalk...${NC}"
+        sudo apt update && sudo apt install -y binwalk
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Binwalk installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install Binwalk.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}Binwalk is already installed.${NC}"
+    fi
+}
+
+# Function to install Hashcat (Fast password recovery, cracking), if it is not already installed
+install_hashcat() {
+    if ! command -v hashcat &> /dev/null; then
+        echo -e "${CYAN}Installing Hashcat...${NC}"
+        sudo apt update && sudo apt install -y hashcat
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Hashcat installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install Hashcat.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}Hashcat is already installed.${NC}"
+    fi
+}

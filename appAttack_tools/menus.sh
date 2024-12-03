@@ -215,8 +215,8 @@ handle_iot_security_tools() {
         case $choice in
             1) run_assigniot ;;
             2) run_assigniot ;;
-            3) run_assigniot ;;
-            4) run_assigniot ;;
+            3) run_binwalk "$OUTPUT_DIR" ;;
+            4) run_hashcat "$OUTPUT_DIR" ;;
             5) run_assigniot ;;
             6) run_assigniot ;;
             7) run_nmap "$OUTPUT_DIR" "true" ;;
@@ -225,7 +225,7 @@ handle_iot_security_tools() {
             10) run_assigniot ;;
             11) run_assigniot ;;
             12) run_assigniot ;;
-            13) run_assigniot ;;
+            13) run_tshark "$OUTPUT_DIR" ;;
             14) run_assigniot ;;
             15) break ;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;

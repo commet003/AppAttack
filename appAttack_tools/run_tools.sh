@@ -336,3 +336,74 @@ run_wapiti() {
     
     echo -e "${GREEN}Wapiti scan completed. Results saved to $output_file.${NC}"
 }
+
+
+# Function to run TShark (Wireshark CLI)
+run_tshark() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/tshark_output.txt"
+
+
+    echo -e "${NC}" 
+    tshark -D
+    echo -e "${NC}"
+    read -p "Enter the interface you want to use: " interface
+
+    echo "Starting Wireshark scan now on interface $interface..."
+
+
+    # Capture the output of the Wireshark command
+    if [[ "$output_to_file" == "y" ]]; then
+        tshark_output=$(tshark -i "$interface" -c 20)
+        echo "$tshark_output" > "$output_file"
+    else
+        tshark_output=$(tshark -i "$interface" -c 20)
+        echo -e "${NC}"
+        echo "$tshark_output"
+    fi
+    generate_ai_insights "$tshark_output"
+    echo -e "${GREEN} TShark operation completed.${NC}"
+}
+
+# Function to run Binwalk
+run_binwalk() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/binwalk_output.txt"
+
+    echo -e "${NC}" 
+    read -p "Enter the path to the file you want to scan: " path_to_target
+
+    if [[ "$output_to_file" == "y" ]]; then
+        binwalk_output=$(binwalk -Y -f "$output_file" "$path_to_target")
+    else
+        binwalk_output=$(binwalk -Y "$path_to_target")
+        echo -e "${NC}"
+        echo "$binwalk_output"
+    fi
+    
+    echo -e "${GREEN}Binwalk scan completed. Results saved to $output_file.${NC}"
+}
+
+# Function to run Hashcat
+run_hashcat() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/hashcat_output.txt"
+
+    echo -e "${NC}"
+    read -p "Enter the hash mode: " hash_mode
+    read -p "Enter the attack mode: " attack_mode
+    read -p "Enter the hash file path: " hash_file_path
+    
+    echo -e "${NC}"
+    echo -e "${BCyan}Hashcat attack starting..."
+
+    if [[ "$output_to_file" == "y" ]]; then
+        hashcat_output=$(hashcat -m "$hash_mode" -a "$attack_mode" -i --increment-min=4 --increment-max=8 "$hash_file_path" ?a?a?a?a?a?a?a?a --outfile "$output_file")
+    else
+        hashcat_output=$(hashcat -m "$hash_mode" -a "$attack_mode" -i --increment-min=4 --increment-max=8 "$hash_file_path" ?a?a?a?a?a?a?a?a)
+        echo -e "${NC}"
+        echo "$hashcat_output"
+    fi
+    
+    echo -e "${GREEN}Hashcat attack complete. Results saved to $output_file.${NC}"
+}

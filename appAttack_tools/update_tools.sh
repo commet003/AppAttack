@@ -237,3 +237,60 @@ update_wapiti() {
         fi
     fi
 }
+
+# Function to update Tshark (Wireshark CLI)
+update_tshark() {
+    if ! command -v tshark &> /dev/null; then
+        sudo apt install -y tshark > /dev/null 2>&1
+        log_message "Tshark installed"
+    else 
+        current_version=$(dpkg-query -W -f='${Version}' tshark 2>/dev/null)
+        latest_version=$(apt-cache policy tshark | grep 'Candidate:' | awk '{print $2}')
+
+        if [ "$current_version" != "$latest_version" ]; then
+            echo -e "${MAGENTA}Updating Tshark...${NC}"
+            sudo apt install -y tshark > /dev/null 2>&1
+            log_message "Tshark updated to version $latest_version"
+        else
+            log_message "Tshark is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update Binwalk (Firmware analyzer)
+update_binwalk() {
+    if ! command -v binwalk &> /dev/null; then
+        sudo apt install -y binwalk > /dev/null 2>&1
+        log_message "Binwalk installed"
+    else 
+        current_version=$(dpkg-query -W -f='${Version}' binwalk 2>/dev/null)
+        latest_version=$(apt-cache policy binwalk | grep 'Candidate:' | awk '{print $2}')
+
+        if [ "$current_version" != "$latest_version" ]; then
+            echo -e "${MAGENTA}Updating Binwalk...${NC}"
+            sudo apt install -y binwalk > /dev/null 2>&1
+            log_message "Binwalk updated to version $latest_version"
+        else
+            log_message "Binwalk is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update Hashcat (Fast password recovery, cracking)
+update_hashcat() {
+    if ! command -v hashcat &> /dev/null; then
+        sudo apt install -y hashcat > /dev/null 2>&1
+        log_message "Hashcat installed"
+    else 
+        current_version=$(dpkg-query -W -f='${Version}' hashcat 2>/dev/null)
+        latest_version=$(apt-cache policy hashcat | grep 'Candidate:' | awk '{print $2}')
+
+        if [ "$current_version" != "$latest_version" ]; then
+            echo -e "${MAGENTA}Updating Hashcat...${NC}"
+            sudo apt install -y hashcat > /dev/null 2>&1
+            log_message "Hashcat updated to version $latest_version"
+        else
+            log_message "Hashcat is up-to-date (version $current_version)"
+        fi
+    fi
+}
