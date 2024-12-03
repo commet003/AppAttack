@@ -328,12 +328,13 @@ run_wapiti() {
 
     if [[ "$output_to_file" == "y" ]]; then
         # Run Wapiti scan
-        wapiti -u "$url" -o "$output_file"
+        wapiti_output=$(wapiti -u "$url" -o "$output_file")
     else
         # Run Wapiti scan
-        wapiti -u "$url"
+        wapiti_output=$(wapiti -u "$url")
     fi
     
+    generate_ai_insights "$wapiti_output"
     echo -e "${GREEN}Wapiti scan completed. Results saved to $output_file.${NC}"
 }
 
@@ -381,6 +382,7 @@ run_binwalk() {
         echo "$binwalk_output"
     fi
     
+    generate_ai_insights "$binwalk_output"
     echo -e "${GREEN}Binwalk scan completed. Results saved to $output_file.${NC}"
 }
 
@@ -405,5 +407,6 @@ run_hashcat() {
         echo "$hashcat_output"
     fi
     
+    generate_ai_insights "$hashcat_output"
     echo -e "${GREEN}Hashcat attack complete. Results saved to $output_file.${NC}"
 }
