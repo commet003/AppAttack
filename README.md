@@ -18,7 +18,7 @@
 
 
 ## For Devs
-You're better off running ./main for testing additions to the tool. Otherwise you have to rebuild it each time to test. Make sure you also reinstall to make sure the install process isn't broken. 
+You're better off running ./main.sh for testing additions to the tool. Otherwise you have to rebuild it each time to test. Make sure you also reinstall to make sure the install process isn't broken. 
 
 ### To reinstall 
 1. **Remove the original installation**:
