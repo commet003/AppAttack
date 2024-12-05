@@ -5,20 +5,45 @@ LOG_FILE="$HOME/automated_scan.log"
 
 > $LOG_FILE
 
+# Function to validate IP address
+validate_ip() {
+    local ip="$1"
+    # Check if the input matches the pattern for an IPv4 address
+    if [[ $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+        # Check if each octet is between 0 and 255
+        for octet in $(echo "$ip" | tr '.' ' '); do
+            if ((octet < 0 || octet > 255)); then
+                return 1
+            fi
+        done
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to validate port
+validate_port() {
+    local port="$1"
+    # Check if the port is a number between 1 and 65535
+    if [[ $port =~ ^[0-9]+$ ]] && ((port >= 1 && port <= 65535)); then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Function to run Nmap
 auto_nmap() {
     echo "Running Nmap..." >> $LOG_FILE
-    #this is the nmap scan we want to use, but its slow for testing
-    #ai_output=$(nmap -p "$port" --script=http-enum,http-title,http-methods,http-headers,http-server-header -A -T4 "$ip")
     nmap_output_file="$HOME/nmap_scan_output.txt"
     nmap_ai_output=$(nmap "$ip")
     echo "$nmap_ai_output" > "$nmap_output_file"
     echo "$nmap_ai_output" >> $LOG_FILE
     echo "Nmap scan completed." >> $LOG_FILE
-
 }
 
-#Function to run Nikto
+# Function to run Nikto
 auto_nikto() {
     echo "Running Nikto..." >>$LOG_FILE
     nikto_output_file="$HOME/nikto_scan_output.txt"
@@ -31,8 +56,6 @@ auto_nikto() {
 # Function to run OWASP ZAP
 auto_zap() {
     echo "Running OWASP ZAP..." >> $LOG_FILE
-    #this scan is really resource heavy, maybe try rate limit somehow
-
     zap_output_file="$HOME/zap_scan_output.txt"
     zap_ai_output=$(zap -quickurl "http://$ip:$port" -cmd)
     echo "zap_ai_output" > "$zap_output_file"
@@ -42,7 +65,7 @@ auto_zap() {
 
 # Function to run Wapiti
 auto_wapiti() {
-    echo "Running Wapiti..." >> $LOG_FILE 
+    echo "Running Wapiti..." >> $LOG_FILE
     wapiti_output_file="$HOME/wapiti_scan_output.txt"
     wapiti_ai_output=$(wapiti -u "http://$ip:$port")
     echo "$wapiti_ai_output" > "$wapiti_output_file"
@@ -50,18 +73,26 @@ auto_wapiti() {
     echo "Wapiti scan completed." >> $LOG_FILE
 }
 
-
-## we are getting debug output from the ai insights as well                         ##
-## to turn this off, find the generate_ai_insights function in the utilities folder ##
-## comment out the two lines:                                                       ##
-##        echo "Response:"                                                          ##
-##        echo "$RESPONSE"                                                          ##
-
 # Run automated scans
 run_automated_scan() {
-    ## add some input validation here, re prompt user if ip/port are invalid characters or blank
-    read -p "Enter the target IP address: " ip
-    read -p "Enter the target port: " port
+    while true; do
+        read -p "Enter the target IP address: " ip
+        if validate_ip "$ip"; then
+            break
+        else
+            echo "Invalid IP address. Please enter a valid IPv4 address."
+        fi
+    done
+
+    while true; do
+        read -p "Enter the target port: " port
+        if validate_port "$port"; then
+            break
+        else
+            echo "Invalid port number. Please enter a number between 1 and 65535."
+        fi
+    done
+
     echo "Starting automated scans for IP: $ip and Port: $port" >> $LOG_FILE
 
     auto_nmap
@@ -69,10 +100,11 @@ run_automated_scan() {
     ## Uncomment to run zap and wapiti scans, commented out for faster testing ##
     # auto_zap
     # auto_wapiti
-    echo "y" | generate_ai_insights "$nmap_ai_output" 
+    echo "y" | generate_ai_insights "$nmap_ai_output"
     echo "y" | generate_ai_insights "$nikto_ai_output"
-    ## Uncomment to run ai insights on zap and wapiti scans. Currently they dont work ##
+    ## Uncomment to run ai insights on zap and wapiti scans. Currently they don't work ##
     # echo "y" | generate_ai_insights "$zap_ai_output"
     # echo "y" | generate_ai_insights "$wapiti_ai_output"
 }
 
+run_automated_scan
