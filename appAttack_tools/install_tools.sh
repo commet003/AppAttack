@@ -147,10 +147,26 @@ install_nmap() {
     fi
 }
 
+# Function to install Aircrack if not already installed
+install_aircrack-ng() {
+    if ! command -v aircrack-ng &> /dev/null; then
+        echo -e "${MAGENTA}Installing aircrack-ng...${NC}"
+        sudo apt update && sudo apt install -y aircrack-ng
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}aircrack-ng installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install aircrack-ng.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}aircrack-ng is already installed.${NC}"
+    fi
+}
+
 # Function to install Reaver if not already installed
 install_reaver() {
     if ! command -v reaver &> /dev/null; then
-        echo -e "${MAGENTA}Installing nmap...${NC}"
+        echo -e "${MAGENTA}Installing reaver...${NC}"
         sudo apt update && sudo apt install -y reaver
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}reaver installed successfully!${NC}"
