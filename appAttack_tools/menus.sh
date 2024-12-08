@@ -83,14 +83,12 @@ display_iot_security_tools_menu() {
     echo -e "${BCyan}5)${NC} ${White}Miranda${NC}"
     echo -e "${BCyan}6)${NC} ${White}Ncrack${NC}"
     echo -e "${BCyan}7)${NC} ${White}Nmap${NC}"
-    echo -e "${BCyan}8)${NC} ${White}Pholus${NC}"
-    echo -e "${BCyan}9)${NC} ${White}Reaver${NC}"
-    echo -e "${BCyan}10)${NC} ${White}Scapy${NC}"
-    echo -e "${BCyan}11)${NC} ${White}Umap${NC}"
-    echo -e "${BCyan}12)${NC} ${White}Wifiphisher${NC}"
-    echo -e "${BCyan}13)${NC} ${White}Wireshark${NC}"
-    echo -e "${BCyan}14)${NC} ${White}Yersinia${NC}"
-    echo -e "${BCyan}15)${NC} ${White}Go Back${NC}"
+    echo -e "${BCyan}8)${NC} ${White}Reaver${NC}"
+    echo -e "${BCyan}9)${NC} ${White}Scapy${NC}"
+    echo -e "${BCyan}10)${NC} ${White}Umap${NC}"
+    echo -e "${BCyan}11)${NC} ${White}Wifiphisher${NC}"
+    echo -e "${BCyan}12)${NC} ${White}Wireshark${NC}"
+    echo -e "${BCyan}13)${NC} ${White}Go Back${NC}"
     echo -e "${BYellow}╚═══════════════════════════════════════════╝${NC}"
 }
 
@@ -148,14 +146,12 @@ display_step_by_step_guide_iot_security_tools(){
     echo -e "${BCyan}5)  Miranda: A tool used to attack UPnP devices${NC}"
     echo -e "${MAGENTA}6)  Ncrack: A network authentication cracking tool${NC}"
     echo -e "${BCyan}7)  Nmap: Network exploration and security auditing tool${NC}"
-    echo -e "${MAGENTA}8)  Pholus: A mDNS and DNS-SD security assessment tool${NC}"
-    echo -e "${BCyan}9)  Reaver: Used to conduct brute force attacks against WPS PINs${NC}"
-    echo -e "${MAGENTA}10) Scapy: A tool for crafting, decoding, and forging packets for a variety of network protocols${NC}"
-    echo -e "${BCyan}11) Umap: Used to attack UPnP devices via the WAN interface${NC}"
-    echo -e "${MAGENTA}12) Wifiphisher: Rouge access point framework used to conduct man-in-the-middle attacks${NC}"
-    echo -e "${BCyan}13) Wireshark: Network packet capture and analysis tool${NC}"
-    echo -e "${MAGENTA}14) Yersinia: Network layer 2 attack tool${NC}"
-    echo -e "${YELLOW}15) Go Back"
+    echo -e "${MAGENTA}8)  Reaver: Used to conduct brute force attacks against WPS PINs${NC}"
+    echo -e "${BCyan}9) Scapy: A tool for crafting, decoding, and forging packets for a variety of network protocols${NC}"
+    echo -e "${MAGENTA}10) Umap: Used to attack UPnP devices via the WAN interface${NC}"
+    echo -e "${BCyan}11) Wifiphisher: Rouge access point framework used to conduct man-in-the-middle attacks${NC}"
+    echo -e "${MAGENTA}12) Wireshark: Network packet capture and analysis tool${NC}"
+    echo -e "${YELLOW}13) Go Back"
   #  display_asterisk  
 }
 
@@ -213,21 +209,19 @@ handle_iot_security_tools() {
         display_iot_security_tools_menu
         read -p "Choose an option: " choice
         case $choice in
-            1) run_assigniot ;;
-            2) run_assigniot ;;
+            1) run_aircrack "$OUTPUT_DIR" ;;
+            2) run_bettercap "$OUTPUT_DIR" ;;
             3) run_binwalk "$OUTPUT_DIR" ;;
             4) run_hashcat "$OUTPUT_DIR" ;;
-            5) run_assigniot ;;
-            6) run_assigniot ;;
+            5) run_miranda "$OUTPUT_DIR" ;;
+            6) run_ncrack "$OUTPUT_DIR" ;;
             7) run_nmap "$OUTPUT_DIR" "true" ;;
-            8) run_assigniot ;;
-            9) run_assigniot ;;
-            10) run_assigniot ;;
-            11) run_assigniot ;;
-            12) run_assigniot ;;
-            13) run_tshark "$OUTPUT_DIR" ;;
-            14) run_assigniot ;;
-            15) break ;;
+            8) run_reaver "$OUTPUT_DIR" ;;
+            9) run_scapy "$OUTPUT_DIR" ;;
+            10) run_umap "$OUTPUT_DIR" ;;
+            11) run_wifiphisher "$OUTPUT_DIR" ;;
+            12) run_tshark "$OUTPUT_DIR" ;;
+            13) break ;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
         esac
     done

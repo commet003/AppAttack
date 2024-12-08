@@ -16,17 +16,17 @@ run_nmap(){
     # Handle file output and IoT usage
     if [[ "$output_to_file" == "y" ]]; then
         if [[ "$isIoTUsage" == "true" ]]; then
-            nmap_output=$(nmap -A "$url" -oN "$output_file")
+            nmap_output=$(nmap --top-ports 100 -v -iR 100 -oN "$output_file" "$url")
         else
             nmap_output=$(nmap -oN "$output_file" "$url")
         fi
     else
         if [[ "$isIoTUsage" == "true" ]]; then
-            nmap_output=$(nmap -A "$url")
-            nmap -A "$url"
+            nmap_output=$(nmap --top-ports 100 -v -iR 100 "$url")
+            echo "$nmap_output"
         else
             nmap_output=$(nmap "$url")
-            nmap "$url"
+            echo "$nmap_output"
         fi
     fi
 
@@ -349,16 +349,17 @@ run_tshark() {
     tshark -D
     echo -e "${NC}"
     read -p "Enter the interface you want to use: " interface
+    read -p "Enter how many packets you want to capture: " packets_limit
 
     echo "Starting Wireshark scan now on interface $interface..."
 
 
     # Capture the output of the Wireshark command
     if [[ "$output_to_file" == "y" ]]; then
-        tshark_output=$(tshark -i "$interface" -c 20)
+        tshark_output=$(tshark -i "$interface" -c "$packets_limit")
         echo "$tshark_output" > "$output_file"
     else
-        tshark_output=$(tshark -i "$interface" -c 20)
+        tshark_output=$(tshark -i "$interface" -c "$packets_limit")
         echo -e "${NC}"
         echo "$tshark_output"
     fi
@@ -409,4 +410,214 @@ run_hashcat() {
     
     generate_ai_insights "$hashcat_output"
     echo -e "${GREEN}Hashcat attack complete. Results saved to $output_file.${NC}"
+}
+
+# Function to run Aircrack-ng
+run_aircrack(){
+    output_file="${output}_aircrack"
+    read -p "Enter the path to the .cap file: " cap_file
+    read -p "Enter the Wi-Fi network's ESSID (optional, press Enter to skip): " essid
+    if [[ "$output_to_file" == "y" ]]; then
+        if [[ -n "$essid" ]]; then
+            aircrack_output=$(aircrack-ng -w "$wordlist" -e "$essid" -l "$output_file" "$cap_file")
+        else
+            aircrack_output=$(aircrack-ng -w "$wordlist" -l "$output_file" "$cap_file")
+        fi
+    else
+        if [[ -n "$essid" ]]; then
+            aircrack-ng -w "$wordlist" -e "$essid" "$cap_file"
+        else
+            aircrack-ng -w "$wordlist" "$cap_file"
+        fi
+    fi
+    generate_ai_insights "$aircrack_output"
+    echo -e "${GREEN}Aircrack-ng operation completed.${NC}"
+}
+
+# Function to run Miranda
+run_miranda() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/miranda_output.txt"
+    
+    echo -e "${NC}"
+    echo -e "${BCyan}Miranda starting..."
+
+    miranda
+    msearch
+    host get 0
+    host details 0
+
+
+    if [[ "$output_to_file" == "y" ]]; then
+        miranda_output=$(host send 0 WANConnectionDevice WANIPConnection AddPortMapping)
+        echo "$miranda_output" > "$output_file"
+    else
+        miranda_output=$(host send 0 WANConnectionDevice WANIPConnection AddPortMapping)
+        echo -e "${NC}"
+        echo "$miranda_output"
+    fi
+    
+    generate_ai_insights "$miranda_output"
+    echo -e "${GREEN}Miranda testing complete. Results saved to $output_file.${NC}"
+}
+
+# Function to run Umap
+run_umap() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/umap_output.txt"
+    
+    echo -e "${NC}"
+    echo -e "${BCyan}Umap starting..."
+
+    read -p "Enter your target IP: " target_ip
+
+
+    if [[ "$output_to_file" == "y" ]]; then
+        umap_output=$(umap -c -i "$target_ip")
+        echo "$umap_output" > "$output_file"
+    else
+        umap_output=$(umap -c -i "$target_ip")
+        echo -e "${NC}"
+        echo "$umap_output"
+    fi
+    
+    generate_ai_insights "$umap_output"
+    echo -e "${GREEN}Miranda testing complete. Results saved to $output_file.${NC}"
+}
+
+
+# Function to run Bettercap
+run_bettercap() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/bettercap_output.txt"
+    read -p "Enter the network interface to use (e.g., wlan0, eth0): " interface
+    read -p "Enter the target IP or range (optional, press Enter to skip): " target
+    
+    if [[ -z "$interface" ]]; then
+        echo -e "${RED}No interface provided. Exiting.${NC}"
+        return
+    fi
+    
+    if [[ "$output_to_file" == "y" ]]; then
+        if [[ -n "$target" ]]; then
+            bettercap_output=$(sudo bettercap -iface "$interface" -eval "set arp.spoof.targets $target; arp.spoof on; net.probe on" > "$output_file" 2>&1)
+        else
+            bettercap_output=$(sudo bettercap -iface "$interface" -eval "net.probe on" > "$output_file" 2>&1)
+        fi
+    else
+        if [[ -n "$target" ]]; then
+            sudo bettercap -iface "$interface" -eval "set arp.spoof.targets $target; arp.spoof on; net.probe on"
+        else
+            sudo bettercap -iface "$interface" -eval "net.probe on"
+        fi
+    fi
+    
+    echo -e "${GREEN}Bettercap operation completed.${NC}"
+    if [[ "$output_to_file" == "y" ]]; then
+        echo -e "${GREEN}Results saved to $output_file.${NC}"
+    fi
+}
+
+# Function to run Scapy
+run_scapy() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/scapy_output.txt"
+    echo -e "${CYAN}Launching Scapy interactive shell...${NC}"
+    
+    read -p "Do you want to save session output to a file? (y/n): " save_to_file
+    
+    if [[ "$save_to_file" == "y" ]]; then
+        echo -e "${YELLOW}Scapy session will be logged to $output_file.${NC}"
+        scapy -c "log = open('$output_file', 'w'); exec(input('Scapy> '))" 
+        echo -e "${GREEN}Scapy session logged to $output_file.${NC}"
+    else
+        scapy
+    fi
+    
+    echo -e "${GREEN}Scapy operation completed.${NC}"
+}
+
+# Function to run Wifiphisher
+run_wifiphisher() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/wifiphisher_output.txt"
+    
+    echo -e "${CYAN}Launching Wifiphisher...${NC}"
+    
+    read -p "Enter the network interface to use (e.g., wlan0): " interface
+    read -p "Enter the target Wi-Fi network's ESSID (optional, press Enter to skip): " essid
+    
+    if [[ -z "$interface" ]]; then
+        echo -e "${RED}No interface provided. Exiting.${NC}"
+        return
+    fi
+    
+    if [[ "$output_to_file" == "y" ]]; then
+        if [[ -n "$essid" ]]; then
+            wifiphisher_output=$(sudo wifiphisher -i "$interface" --essid "$essid" > "$output_file" 2>&1)
+        else
+            wifiphisher_output=$(sudo wifiphisher -i "$interface" > "$output_file" 2>&1)
+        fi
+        echo -e "${GREEN}Wifiphisher operation completed. Results saved to $output_file.${NC}"
+    else
+        if [[ -n "$essid" ]]; then
+            sudo wifiphisher -i "$interface" --essid "$essid"
+        else
+            sudo wifiphisher -i "$interface"
+        fi
+        echo -e "${GREEN}Wifiphisher operation completed.${NC}"
+    fi
+}
+
+# Function to run Reaver
+run_reaver() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/reaver_output.txt"
+    
+    echo -e "${CYAN}Launching Reaver...${NC}"
+    
+    read -p "Enter the network interface to use (e.g., wlan0): " interface
+    read -p "Enter the target BSSID (MAC address of the router): " bssid
+    read -p "Enter the Wi-Fi channel (optional, press Enter to skip): " channel
+    
+    if [[ -z "$interface" || -z "$bssid" ]]; then
+        echo -e "${RED}Network interface and BSSID are required. Exiting.${NC}"
+        return
+    fi
+    
+    if [[ "$output_to_file" == "y" ]]; then
+        if [[ -n "$channel" ]]; then
+            reaver_output=$(sudo reaver -i "$interface" -b "$bssid" -c "$channel" -o "$output_file" 2>&1)
+        else
+            reaver_output=$(sudo reaver -i "$interface" -b "$bssid" -o "$output_file" 2>&1)
+        fi
+        echo -e "${GREEN}Reaver operation completed. Results saved to $output_file.${NC}"
+    else
+        if [[ -n "$channel" ]]; then
+            sudo reaver -i "$interface" -b "$bssid" -c "$channel"
+        else
+            sudo reaver -i "$interface" -b "$bssid"
+        fi
+        echo -e "${GREEN}Reaver operation completed.${NC}"
+    fi
+}
+
+# Function to run Ncrack
+run_ncrack() {
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/ncrack_output.txt"
+
+    echo -e "${NC}" 
+    read -p "Enter the target ip: " target_ip
+
+    if [[ "$output_to_file" == "y" ]]; then
+        ncrack_output=$(ncrack -T4 -p 23 "$target_ip" -oN "$output_file")
+    else
+        ncrack_output=$(ncrack -T4 -p 23 "$target_ip")
+        echo -e "${NC}"
+        echo "$ncrack_output"
+    fi
+    
+    generate_ai_insights "$ncrack_output"
+    echo -e "${GREEN}Ncrack scan completed. Results saved to $output_file.${NC}"
 }

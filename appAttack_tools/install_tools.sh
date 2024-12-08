@@ -148,7 +148,7 @@ install_nmap() {
 }
 
 # Function to install Aircrack if not already installed
-install_aircrack-ng() {
+install_aircrack() {
     if ! command -v aircrack-ng &> /dev/null; then
         echo -e "${MAGENTA}Installing aircrack-ng...${NC}"
         sudo apt update && sudo apt install -y aircrack-ng
@@ -389,5 +389,231 @@ install_hashcat() {
         fi
     else
         echo -e "${GREEN}Hashcat is already installed.${NC}"
+    fi
+}
+
+# Function to install Miranda (UPnP testing tool), if it is not already installed
+install_miranda() {
+            # Check if Miranda is not installed by checking its directory
+    if [ ! -d "/opt/miranda/" ]; then
+        # Display message indicating Miranda installation
+        echo -e "${CYAN}Installing Miranda...${NC}"
+        # Download Miranda tar file to /tmp directory
+        wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/miranda-upnp/miranda-1.3.tar.gz -P /tmp
+        # Check if the download was successful
+        if [ $? -eq 0 ]; then
+            # Create directory for Miranda in /opt
+            sudo mkdir -p /opt/miranda
+            # Change ownership of the Miranda directory to the current user
+            sudo chown -R $(whoami):$(whoami) /opt/miranda
+            # Extract the downloaded tar file to the Miranda directory
+            tar -xf /tmp/umap-0.8.tar.gz -C /opt/miranda/
+            cd /opt/miranda
+            make && make install
+            cd
+            # Create a symbolic link for the Miranda executable in /usr/local/bin
+            sudo ln -s /opt/miranda-1.3/miranda.py /usr/local/bin/miranda
+            # Check if the symbolic link creation was successful
+            if [ $? -eq 0 ]; then
+                # Display success message
+                echo -e "${GREEN}Miranda installed successfully!${NC}"
+            else
+                # Display failure message and exit script
+                echo -e "${RED}Failed to move Miranda.${NC}"
+                exit 1
+            fi
+        else
+            # Display failure message if download failed and exit script
+            echo -e "${RED}Failed to download Miranda.${NC}"
+            exit 1
+        fi
+    else
+        # Display message if Miranda is already installed
+        echo -e "${GREEN}Miranda is already installed.${NC}"
+    fi
+}
+
+
+# Function to install Umap (Fast password recovery, cracking), if it is not already installed
+install_umap() {
+        # Check if Umap is not installed by checking its directory
+    if [ ! -d "/opt/umap/" ]; then
+        # Display message indicating Umap installation
+        echo -e "${CYAN}Installing Umap...${NC}"
+        # Download OWASP ZAP tar file to /tmp directory
+        wget https://toor.do/umap-0.8.tar.gz -P /tmp
+        pip install SOAPpy
+        pip install iplib
+        # Check if the download was successful
+        if [ $? -eq 0 ]; then
+            # Create directory for Umap in /opt
+            sudo mkdir -p /opt/umap
+            # Change ownership of the Umap directory to the current user
+            sudo chown -R $(whoami):$(whoami) /opt/umap
+            # Extract the downloaded tar file to the Umap directory
+            tar -xf /tmp/umap-0.8.tar.gz -C /opt/umap/
+            cd /opt/umap
+            make && make install
+            cd
+            # Create a symbolic link for the Umap executable in /usr/local/bin
+            sudo ln -s python2 /opt/umap/umap-0.8/umap.py /usr/local/bin/umap
+            # Check if the symbolic link creation was successful
+            if [ $? -eq 0 ]; then
+                # Display success message
+                echo -e "${GREEN}Umap installed successfully!${NC}"
+            else
+                # Display failure message and exit script
+                echo -e "${RED}Failed to move Umap.${NC}"
+                exit 1
+            fi
+        else
+            # Display failure message if download failed and exit script
+            echo -e "${RED}Failed to download Umap.${NC}"
+            exit 1
+        fi
+    else
+        # Display message if Umap is already installed
+        echo -e "${GREEN}Umap is already installed.${NC}"
+    fi
+}
+
+# Function to install Bettercap if not already installed
+
+install_bettercap() {
+    if ! command -v bettercap &> /dev/null; then
+        echo -e "${CYAN}Installing Bettercap...${NC}"
+        sudo apt update && sudo apt install -y bettercap
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Bettercap installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install Bettercap.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}Bettercap is already installed.${NC}"
+    fi
+}
+
+# Function to install scapy if not already installed
+install_scapy() {
+    if ! command -v scapy &> /dev/null; then
+        echo -e "${CYAN}Installing Scapy...${NC}"
+        sudo apt update > /dev/null 2>&1
+        sudo apt install -y python3-scapy > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Scapy installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install Scapy.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}Scapy is already installed.${NC}"
+    fi
+}
+
+install_wifiphisher() {
+    # Colors for output
+    CYAN='\033[0;36m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    RED='\033[0;31m'
+    NC='\033[0m'  # No Color
+
+    # Check if Wifiphisher is already installed
+    if ! command -v wifiphisher &> /dev/null; then
+        echo -e "${CYAN}Installing Wifiphisher...${NC}"
+
+        # Ensure no existing directory conflicts
+        if [ -d "/tmp/wifiphisher" ]; then
+            echo -e "${YELLOW}Removing existing /tmp/wifiphisher directory...${NC}"
+            sudo rm -rf /tmp/wifiphisher
+        fi
+
+        # Update and install necessary dependencies
+        echo -e "${CYAN}Updating package list and installing dependencies...${NC}"
+        sudo apt update -y
+        sudo apt install -y git python3-pip libnl-3-dev libnl-genl-3-dev python3-dev
+
+        # Clone the Wifiphisher repository
+        echo -e "${CYAN}Cloning Wifiphisher repository...${NC}"
+        git clone https://github.com/wifiphisher/wifiphisher.git /tmp/wifiphisher
+
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to clone Wifiphisher repository.${NC}"
+            exit 1
+        fi
+
+        # Fix Python compatibility issue with ConfigParser
+        echo -e "${CYAN}Fixing Python compatibility issue in hostapdconfig.py...${NC}"
+        sed -i 's/from ConfigParser import SafeConfigParser/from configparser import ConfigParser/' /tmp/wifiphisher/roguehostapd/config/hostapdconfig.py
+
+        # Install Python dependencies and setup
+        cd /tmp/wifiphisher || exit
+        echo -e "${CYAN}Installing Python dependencies...${NC}"
+        sudo pip3 install -r requirements.txt
+
+        echo -e "${CYAN}Running setup.py...${NC}"
+        sudo python3 setup.py install
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Wifiphisher installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install Wifiphisher.${NC}"
+            exit 1
+        fi
+
+        # Clean up
+        echo -e "${YELLOW}Cleaning up...${NC}"
+        cd ~ || exit
+        sudo rm -rf /tmp/wifiphisher
+    else
+        echo -e "${GREEN}Wifiphisher is already installed.${NC}"
+    fi
+}
+
+
+
+# Function to install Reaver if not already installed
+install_reaver() {
+    if ! command -v reaver &> /dev/null; then
+        echo -e "${CYAN}Installing Reaver...${NC}"
+        sudo apt update && sudo apt install -y build-essential libpcap-dev aircrack-ng git > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to install dependencies for Reaver.${NC}"
+            exit 1
+        fi
+
+        git clone https://github.com/t6x/reaver-wps-fork-t6x.git /tmp/reaver-wps-fork-t6x > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to clone Reaver repository.${NC}"
+            exit 1
+        fi
+
+        cd /tmp/reaver-wps-fork-t6x/src || exit
+        ./configure > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Configuration failed during Reaver installation.${NC}"
+            exit 1
+        fi
+
+        make > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to compile Reaver.${NC}"
+            exit 1
+        fi
+
+        sudo make install > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Reaver installed successfully!${NC}"
+        else
+            echo -e "${RED}Failed to install Reaver.${NC}"
+            exit 1
+        fi
+
+        # Clean up
+        cd ~ || exit
+        sudo rm -rf /tmp/reaver-wps-fork-t6x
+    else
+        echo -e "${GREEN}Reaver is already installed.${NC}"
     fi
 }

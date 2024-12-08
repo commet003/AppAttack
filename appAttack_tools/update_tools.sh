@@ -14,13 +14,15 @@ check_updates() {
     update_owasp_zap
     update_nikto
     update_nmap
-    update_aircrack-ng
+    update_aircrack
     update_reaver
     update_ncrack
     update_john
     update_sqlmap
     update_metasploit
     update_wapiti
+    update_miranda
+    update_umap
 }
 
 # Function to check for updates
@@ -36,13 +38,15 @@ check_updates() {
         update_owasp_zap
         update_nikto
         update_nmap
-        update_aircrack-ng
+        update_aircrack
         update_reaver
         update_ncrack
         update_john
         update_sqlmap
         update_metasploit
-	update_wapiti
+	    update_wapiti
+        update_miranda
+        update_umap
         # Display success message
         echo -e "${GREEN}Updates checked successfully.${NC}"
     else
@@ -117,7 +121,7 @@ update_nmap() {
 }
 
 # Function to update aircrack-ng (a network exploration and security auditing tool)
-update_aircrack-ng() {
+update_aircrack() {
     if ! command -v aircrack-ng &> /dev/null; then
         sudo apt install -y aircrack-ng > /dev/null 2>&1
         log_message "Aircrack-ng installed"
@@ -332,6 +336,142 @@ update_hashcat() {
             log_message "Hashcat updated to version $latest_version"
         else
             log_message "Hashcat is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update Miranda
+update_miranda() {
+    if ! command -v miranda &> /dev/null; then
+        sudo apt install -y miranda > /dev/null 2>&1
+        log_message "Miranda installed"
+    else
+        current_version=$(dpkg -s miranda | grep '^Version:' | awk '{print $2}')
+        latest_version=$(apt-cache policy miranda | grep 'Candidate:' | awk '{print $2}')
+        if [ "$current_version" != "$latest_version" ]; then
+            sudo apt install -y miranda > /dev/null 2>&1
+            log_message "Miranda updated to version $latest_version"
+        else
+            log_message "Miranda is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update umap
+update_umap() {
+    if ! command -v umap &> /dev/null; then
+        sudo apt install -y umap > /dev/null 2>&1
+        log_message "Umap installed"
+    else
+        current_version=$(dpkg -s umap | grep '^Version:' | awk '{print $2}')
+        latest_version=$(apt-cache policy umap | grep 'Candidate:' | awk '{print $2}')
+        if [ "$current_version" != "$latest_version" ]; then
+            sudo apt install -y umap > /dev/null 2>&1
+            log_message "Umap updated to version $latest_version"
+        else
+            log_message "Umap is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update bettercap
+update_bettercap() {
+    if ! command -v bettercap &> /dev/null; then
+        echo -e "${MAGENTA}Installing Bettercap...${NC}"
+        sudo apt update > /dev/null 2>&1
+        sudo apt install -y bettercap > /dev/null 2>&1
+        log_message "Bettercap installed"
+    else
+        current_version=$(bettercap --version | awk '{print $2}')
+        latest_version=$(curl -s https://github.com/bettercap/bettercap/releases/latest | grep -oP 'v\K[0-9.]+')
+        
+        if [ "$current_version" != "$latest_version" ]; then
+            echo -e "${MAGENTA}Updating Bettercap...${NC}"
+            sudo apt remove -y bettercap > /dev/null 2>&1
+            curl -L https://github.com/bettercap/bettercap/releases/download/v$latest_version/bettercap_linux_amd64 -o /tmp/bettercap > /dev/null 2>&1
+            sudo mv /tmp/bettercap /usr/local/bin/bettercap
+            sudo chmod +x /usr/local/bin/bettercap
+            log_message "Bettercap updated to version $latest_version"
+        else
+            log_message "Bettercap is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update scapy
+update_scapy() {
+    if ! command -v scapy &> /dev/null; then
+        echo -e "${MAGENTA}Installing Scapy...${NC}"
+        sudo apt update > /dev/null 2>&1
+        sudo apt install -y python3-scapy > /dev/null 2>&1
+        log_message "Scapy installed"
+    else
+        current_version=$(scapy --version | awk '{print $2}')
+        latest_version=$(pip search scapy | grep -oP '^scapy \(\K[0-9.]+' | head -n 1)
+
+        if [ "$current_version" != "$latest_version" ]; then
+            echo -e "${MAGENTA}Updating Scapy...${NC}"
+            sudo pip install --upgrade scapy > /dev/null 2>&1
+            log_message "Scapy updated to version $latest_version"
+        else
+            log_message "Scapy is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update Wifiphisher
+update_wifiphisher() {
+    if ! command -v wifiphisher &> /dev/null; then
+        echo -e "${MAGENTA}Installing Wifiphisher...${NC}"
+        sudo apt update > /dev/null 2>&1
+        sudo apt install -y wifiphisher > /dev/null 2>&1
+        log_message "Wifiphisher installed"
+    else
+        current_version=$(wifiphisher --version 2>&1 | awk '{print $NF}')
+        latest_version=$(curl -s https://github.com/wifiphisher/wifiphisher/releases/latest | grep -oP 'v\K[0-9.]+' | head -n 1)
+
+        if [ "$current_version" != "$latest_version" ]; then
+            echo -e "${MAGENTA}Updating Wifiphisher...${NC}"
+            sudo apt remove -y wifiphisher > /dev/null 2>&1
+            git clone https://github.com/wifiphisher/wifiphisher.git /tmp/wifiphisher > /dev/null 2>&1
+            cd /tmp/wifiphisher || exit
+            sudo python3 setup.py install > /dev/null 2>&1
+            cd ~ || exit
+            sudo rm -rf /tmp/wifiphisher
+            log_message "Wifiphisher updated to version $latest_version"
+        else
+            log_message "Wifiphisher is up-to-date (version $current_version)"
+        fi
+    fi
+}
+
+# Function to update Reaver
+update_reaver() {
+    if ! command -v reaver &> /dev/null; then
+        echo -e "${MAGENTA}Installing Reaver...${NC}"
+        sudo apt update > /dev/null 2>&1
+        sudo apt install -y reaver > /dev/null 2>&1
+        log_message "Reaver installed"
+    else
+        current_version=$(reaver -h 2>&1 | grep -oP '(?<=Reaver v)[0-9.]+')
+        latest_version=$(curl -s https://github.com/t6x/reaver-wps-fork-t6x/releases/latest | grep -oP 'v\K[0-9.]+')
+
+        if [ "$current_version" != "$latest_version" ]; then
+            echo -e "${MAGENTA}Updating Reaver...${NC}"
+            cd /tmp
+            if [ -d "reaver-wps-fork-t6x" ]; then
+                sudo rm -rf reaver-wps-fork-t6x
+            fi
+            git clone https://github.com/t6x/reaver-wps-fork-t6x.git > /dev/null 2>&1
+            cd reaver-wps-fork-t6x/src || exit
+            ./configure > /dev/null 2>&1
+            make > /dev/null 2>&1
+            sudo make install > /dev/null 2>&1
+            cd ~ || exit
+            sudo rm -rf /tmp/reaver-wps-fork-t6x
+            log_message "Reaver updated to version $latest_version"
+        else
+            log_message "Reaver is up-to-date (version $current_version)"
         fi
     fi
 }

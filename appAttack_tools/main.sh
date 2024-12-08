@@ -70,6 +70,20 @@ main() {
     install_binwalk
     # Check and install hashcat
     install_hashcat
+    # Check and install aircrack
+    install_aircrack
+    # Check and install miranda
+    install_miranda
+    # Check and install umap
+    install_umap
+    # Check and install bettercap
+	install_bettercap
+	# Check and install scapy
+	install_scapy
+	# Check and install wifiphisher
+    install_wifiphisher
+	# Check and install reaver
+	install_reaver
     
     # Check for updates for the installed tools
     check_updates
