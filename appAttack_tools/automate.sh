@@ -58,7 +58,7 @@ auto_zap() {
     echo "Running OWASP ZAP..." >> $LOG_FILE
     zap_output_file="$HOME/zap_scan_output.txt"
     zap_ai_output=$(zap -quickurl "http://$ip:$port" -cmd)
-    echo "zap_ai_output" > "$zap_output_file"
+    echo "$zap_ai_output" > "$zap_output_file"
     echo "OWASP ZAP output saved to $zap_output_file" >> $LOG_FILE
     echo "OWASP ZAP scan completed." >> $LOG_FILE
 }
@@ -97,12 +97,15 @@ run_automated_scan() {
 
     auto_nmap
     auto_nikto
-    ## Uncomment to run zap and wapiti scans, commented out for faster testing ##
-    # auto_zap
-    # auto_wapiti
-    echo "y" | generate_ai_insights "$nmap_ai_output"
-    echo "y" | generate_ai_insights "$nikto_ai_output"
+    auto_zap
+    auto_wapiti
+
+    ## Uncomment to get ai insights on each scan. ##
+    #echo "y" | generate_ai_insights "$nmap_ai_output"
+    #echo "y" | generate_ai_insights "$nikto_ai_output"
+
     ## Uncomment to run ai insights on zap and wapiti scans. Currently they don't work ##
+    ## The argument size for curl is too large. Need to find a solution ##
     # echo "y" | generate_ai_insights "$zap_ai_output"
     # echo "y" | generate_ai_insights "$wapiti_ai_output"
 }
