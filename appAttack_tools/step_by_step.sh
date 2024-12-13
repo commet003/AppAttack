@@ -300,3 +300,118 @@ handle_step_by_step_pentest_wapiti() {
     
     echo -e "${YELLOW}End of Wapiti Step-by-Step Guide${NC}"
 }
+
+# Function for handling the guide for the aircrack IoT tool
+handle_step_by_step_IoT_aircrack(){
+    
+    local choice
+    
+    while true; do
+        
+        echo "   - Aircrack-ng: A network software suite to assess Wi-Fi network security"
+        echo "   - Download and learn more: https://www.aircrack-ng.org/"
+        echo -e "${YELLOW}1) Go Back${NC}"
+        read -p "Choose an option: " choice
+        
+        case $choice in
+            
+            1) break ;;
+            
+            *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
+            
+        esac
+        
+    done
+}
+
+# Function for handling the guide for the bettercap IoT tool
+handle_step_by_step_IoT_bettercap() {
+    
+    local choice
+    
+    while true; do
+        
+        echo "   - Bettercap: A powerful and flexible tool for network reconnaissance and MITM attacks"
+        echo "   - Download and learn more: https://www.bettercap.org/"
+        echo -e "${YELLOW}1) Go Back${NC}"
+        read -p "Choose an option: " choice
+        
+        case $choice in
+            
+            1) break ;;
+            
+            *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
+            
+        esac
+        
+    done
+}
+
+# Function for handling the guide for the scapy IoT tool
+handle_step_by_step_IoT_scapy() {
+    
+    local choice
+    
+    while true; do
+        
+        echo "   - Scapy: A powerful Python-based interactive packet manipulation tool for network analysis, testing, and troubleshooting."
+        echo "   - Learn more: https://scapy.net/"
+        echo -e "${YELLOW}1) Go Back${NC}"
+        read -p "Choose an option: " choice
+        
+        case $choice in
+            
+            1) break ;;
+            
+            *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
+            
+        esac
+        
+    done
+}
+
+# Function for handling the guide for the wifiphisher IoT tool
+handle_step_by_step_IoT_wifiphisher() {
+    
+    local choice
+    
+    while true; do
+        
+        echo "   - Wifiphisher: A tool to simulate rogue access points for phishing attacks and gathering credentials."
+        echo "   - Learn more: https://wifiphisher.org/"
+        echo -e "${YELLOW}1) Go Back${NC}"
+        read -p "Choose an option: " choice
+        
+        case $choice in
+            
+            1) break ;;
+            
+            *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
+            
+        esac
+        
+    done
+}
+
+# Function for handling the guide for the Reaver IoT tool
+handle_step_by_step_IoT_reaver() {
+    
+    local choice
+    
+    while true; do
+        
+        echo "   - Reaver: A tool designed to brute-force WPS-enabled Wi-Fi networks to recover WPA/WPA2 passphrases."
+        echo "   - Learn more: https://github.com/t6x/reaver-wps-fork-t6x"
+        echo -e "${YELLOW}1) Go Back${NC}"
+        read -p "Choose an option: " choice
+        
+        case $choice in
+            
+            1) break ;;
+            
+            *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
+            
+        esac
+        
+    done
+}

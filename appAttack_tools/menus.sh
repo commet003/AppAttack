@@ -139,20 +139,13 @@ display_step_by_step_guide_secure_code_review(){
 display_step_by_step_guide_iot_security_tools(){
     
     echo -e "${YELLOW}IoT Security Tools:${NC}"
-    echo -e "${BCyan}1)  Aircrack-ng: Used for WEP, WPA PSK cracking, de-authentication and replay attacks${NC}"
-    echo -e "${MAGENTA}2)  Bettercap: A WiFi, BLE, HID, and Ethernet reconnaissance tool${NC}"
-    echo -e "${BCyan}3)  Binwalk: Use to analyse or extract firmware from an IoT device${NC}"
-    echo -e "${MAGENTA}4)  Hashcat: A fast password recovery and cracking tool${NC}"
-    echo -e "${BCyan}5)  Miranda: A tool used to attack UPnP devices${NC}"
-    echo -e "${MAGENTA}6)  Ncrack: A network authentication cracking tool${NC}"
-    echo -e "${BCyan}7)  Nmap: Network exploration and security auditing tool${NC}"
-    echo -e "${MAGENTA}8)  Reaver: Used to conduct brute force attacks against WPS PINs${NC}"
-    echo -e "${BCyan}9) Scapy: A tool for crafting, decoding, and forging packets for a variety of network protocols${NC}"
-    echo -e "${MAGENTA}10) Umap: Used to attack UPnP devices via the WAN interface${NC}"
-    echo -e "${BCyan}11) Wifiphisher: Rouge access point framework used to conduct man-in-the-middle attacks${NC}"
-    echo -e "${MAGENTA}12) Wireshark: Network packet capture and analysis tool${NC}"
-    echo -e "${YELLOW}13) Go Back"
-  #  display_asterisk  
+    echo -e "${CYAN}1) Aircrack-ng: Crack WEP/WPA-PSK keys using captured data packets${NC}"
+    echo -e "${MAGENTA}2) Bettercap: Perform reconnaissance and MITM attacks on IoT and wireless networks${NC}"
+    echo -e "${CYAN}3) Scapy: Forge, analyze, and manipulate network packets for testing and debugging.${NC}"
+    echo -e "${MAGENTA}4) Wifiphisher: Simulate rogue access points for phishing and credential gathering.${NC}"
+	echo -e "${CYAN}5) Reaver: Perform brute-force attacks on WPS-enabled Wi-Fi networks to recover the WPA/WPA2 passphrase.${NC}"
+    echo -e "${YELLOW}6) Go Back"
+  #  display_asterisk
 }
 
 
@@ -320,15 +313,15 @@ handle_step_by_step_guide_IoT(){
         
         case $choice in
             
-            1) ;;
-            2) ;;
-            3) ;;
-            4) ;;
-            5) break;;
+            1) handle_step_by_step_IoT_aircrack;;
+            2) handle_step_by_step_IoT_bettercap;;
+            3) handle_step_by_step_IoT_scapy;;
+            4) handle_step_by_step_IoT_wifiphisher;;
+			5) handle_step_by_step_IoT_reaver;;
+            6) break;;
             *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
             
         esac
         
     done
-    
 }
