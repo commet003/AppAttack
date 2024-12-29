@@ -110,4 +110,4 @@ run_automated_scan() {
     # echo "y" | generate_ai_insights "$wapiti_ai_output"
 }
 
-run_automated_scan
+#run_automated_scan
