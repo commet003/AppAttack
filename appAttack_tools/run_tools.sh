@@ -1,5 +1,5 @@
 #!/bin/bash
-
+import install_generate_ai_dependencies from main.sh
 
 # Function to run nmap
 run_nmap(){
