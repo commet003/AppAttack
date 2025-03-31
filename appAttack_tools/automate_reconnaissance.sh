@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #source the run_tools.sh script to use its functions
-source /home/kali/Desktop/AppAttack/appAttack_tools/AppAttack/appAttack_tools/run_tools.sh
+source run_tools.sh
 
 #Define the log file location
 LOG_FILE="$HOME/automated_scan.log"
