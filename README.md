@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+Test file
+
+>>>>>>> b71ccc8 (ReadMe Test File)
 ## Installation For Users
 1. **Clone the Repository**:
    ```bash
