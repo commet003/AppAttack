@@ -1,5 +1,5 @@
-#!/bin/bash
-source /home/kali/Desktop/AppAttack/appAttack_tools/AppAttack/appAttack_tools/utilities.sh
+#!/bin/bash 
+source utilities.sh
 LOG_FILE="$HOME/automated_scan.log"
 
 >$LOG_FILE
