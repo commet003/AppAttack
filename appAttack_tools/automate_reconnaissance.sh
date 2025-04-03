@@ -2,7 +2,7 @@
 
 #source the run_tools.sh script to use its functions
 source run_tools.sh
-
+source utilities.sh
 #Define the log file location
 LOG_FILE="$HOME/automated_scan.log"
 
@@ -59,19 +59,21 @@ run_automated_scan() {
     echo "Starting automated scans for IP: $ip and Port: $port" >> $LOG_FILE
 
     run_nmap "$ip" >> $LOG_FILE
+echo "y" | generate_ai_insights "$nmap_ai_output"
     run_nikto "$ip" "$port" >> $LOG_FILE
+    echo "y" | generate_ai_insights "$nikto_ai_output"
     run_owasp_zap "$ip" "$port" >> $LOG_FILE
+    echo "y" | generate_ai_insights "$zap_ai_output"
     run_wapiti "$ip" "$port" >> $LOG_FILE
+    echo "y" | generate_ai_insights "$wapiti_ai_output"
     echo "Reconnaissance automation completed." >> $LOG_FILE
 
     ## Uncomment to get ai insights on each scan. ##
-    #echo "y" | generate_ai_insights "$nmap_ai_output"
-    #echo "y" | generate_ai_insights "$nikto_ai_output"
+
 
     ## Uncomment to run ai insights on zap and wapiti scans. Currently they don't work ##
     ## The argument size for curl is too large. Need to find a solution ##
-    # echo "y" | generate_ai_insights "$zap_ai_output"
-    # echo "y" | generate_ai_insights "$wapiti_ai_output"
+
 }
 
 run_automated_scan
