@@ -2,6 +2,28 @@
 # Define the log file path where the script logs messages
 LOG_FILE="$HOME/security_tools.log"
 
+# Function to generate structured Gemini JSON prompt
+generate_gemini_prompt() {
+    local tool_name="$1"
+    local description="$2"
+    local scan_output="$3"
+
+    cat <<EOF
+{
+    "contents": [
+        {
+            "parts": [
+                {
+                    "text": "Tool Used: $tool_name\nDescription: $description\nScan Results:\n$scan_output"
+                }
+            ]
+        }
+    ]
+}
+EOF
+}
+
+
 install_generate_ai_insights_dependencies() {
     # Check if jq is installed
     if ! command -v jq &> /dev/null; then
@@ -68,6 +90,7 @@ save_vulnerabilities() {
             return 1
         ;;
     esac
+
     # Display the found vulnerabilities
     echo -e "${GREEN}Vulnerabilities found:${NC}"
     cat "$output_file"
@@ -84,61 +107,109 @@ save_vulnerabilities() {
 
 # Function to get and print AI-generated insights based on tool outputs
 generate_ai_insights() {
-    local output="$1" # Tool output
-    local output_to_file="$2" # Output to file (either y or n)
-    local output_file="$3" # Output file directory
-    
+    local output="$1"  # Tool output
+    local output_to_file="$2"  # Output to file (either y or n)
+    local output_file="$3"  # Output file directory
+    local tool="$4"  # Name of the tool used
+
     read -p "Do you want to get AI-generated insights on the scan? (y/n): " ai_insights
 
     if [[ "$ai_insights" == "y" ]]; then
-        # Use existing Google Gemini API key or replace with your own one
-        API_KEY="AIzaSyBaGoV4EC9vhhypqeB5lG1OEkT-SsT_1tw"
+        API_KEY="YOUR_GEMINI_API_KEY"
 
-        # Escape special characters in the output to safely include it in JSON
+        # Escape scan output
         escaped_output=$(echo "$output" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
 
-        # Format the data for the Gemini API
-        PROMPT="Analyze this output and provide insights: $escaped_output"
-        
-        # Call Gemini API using curl
+        # Normalize tool name to lowercase
+        tool=$(echo "$tool" | tr '[:upper:]' '[:lower:]')
+
+        # Define structured prompts based on the tool used
+        case $tool in
+            #Pen testing prompts
+            "nmap")
+                PROMPT="Analyze the Nmap scan results below. Identify open ports, services, and potential security vulnerabilities. Provide mitigation strategies for each risk.\n$escaped_output"
+                ;;
+            "nikto")
+                PROMPT="Analyze the Nikto scan output and summarize the identified security vulnerabilities. Suggest remediation steps based on best security practices for web servers.\n$escaped_output"
+                ;;
+            "zap")
+                PROMPT="Review the OWASP ZAP scan results. Highlight major security vulnerabilities (such as XSS, SQL Injection, CSRF) and provide actionable steps to mitigate them.\n$escaped_output"
+                ;;
+            "john")
+                PROMPT="Analyze the password hashes and cracking results from John the Ripper. Identify weak passwords and suggest best practices for improving password security.\n$escaped_output"
+                ;;
+            "sqlmap")
+                PROMPT="Analyze the SQLMap scan results. Identify SQL injection risks and suggest parameterized queries or WAF configurations to prevent exploitation.\n$escaped_output"
+                ;;
+            "metasploit")
+                PROMPT="Review the Metasploit session logs. Identify exploited vulnerabilities and suggest hardening measures to prevent similar attacks.\n$escaped_output"
+                ;;
+            "wapiti")
+                PROMPT="Analyze the Wapiti scan output. Identify critical vulnerabilities and recommend security best practices to mitigate risks in web applications.\n$escaped_output"
+                ;;
+            #IoT prompts
+            "aircrack-ng")
+            PROMPT="This is the output from Aircrack-ng, a tool used to analyze and crack wireless network encryption (WEP/WPA/WPA2). Identify any discovered weak keys, cracked passwords, or insecure wireless configurations. Recommend how to secure the affected wireless network:\n$escaped_output"
+                ;;
+    
+            "binwalk")
+                PROMPT="This is the output from Binwalk, used for firmware analysis and reverse engineering. Review the extracted segments and embedded files. Point out any indicators of outdated libraries, hardcoded credentials, or known vulnerabilities in firmware components:\n$escaped_output"
+                ;;
+    
+            "wireshark")
+                PROMPT="Below is packet capture output from Wireshark, often used to analyze IoT device traffic. Identify any sensitive data transmitted in cleartext, insecure protocols (like Telnet/HTTP), or device fingerprinting attempts. Recommend security improvements for IoT communication:\n$escaped_output"
+                ;;
+            "bettercap")
+                PROMPT="This is output from Bettercap, a powerful network attack and monitoring tool. Review the results for signs of ARP spoofing, DNS spoofing, or packet injection. Identify any compromised hosts or suspicious MITM behavior:\n$escaped_output"
+                ;;
+
+            "reaver")
+                PROMPT="This scan is from Reaver, a tool for brute-forcing WPS PINs on wireless networks. Determine if WPS was successfully exploited and suggest how to disable or secure WPS to prevent unauthorized access:\n$escaped_output"
+                ;;
+
+            "scapy")
+                PROMPT="This is Scapy output, reflecting custom packet crafting and sniffing operations. Analyze the results to detect protocol anomalies, unauthorized responses, or fingerprinted devices on the network:\n$escaped_output"
+                ;;
+            "hashcat")
+                PROMPT="This is output from Hashcat, a high-performance password cracker. Analyze cracked hashes and provide insights into weak password patterns, reuse, or policy violations. Suggest stronger password practices:\n$escaped_output"
+                ;;
+
+            "miranda")
+                PROMPT="This is output from Miranda, a tool for fuzzing USB and HID devices. Review the log for signs of firmware misbehavior, unhandled input, or potential attack vectors via USB fuzzing:\n$escaped_output"
+                ;;
+
+            "ncrack")
+                PROMPT="This scan result is from Ncrack, used for brute-forcing network authentication. Identify services with weak or exposed credentials and provide recommendations to harden authentication mechanisms:\n$escaped_output"
+                ;;
+
+            "umap")
+                PROMPT="This is output from Umap, a network visualization tool. Analyze the topology and device relationships to identify exposed services, insecure device placement, or unusual traffic paths:\n$escaped_output"
+                ;;
+
+            "wifiphisher")
+                PROMPT="This scan is from Wifiphisher, a tool used to simulate Wi-Fi phishing attacks. Review the captured interactions and identify potential user deception strategies or social engineering weaknesses:\n$escaped_output"
+                ;;
+                      
+            *)
+                PROMPT="Analyze the security scan results and provide insights.\n$escaped_output"
+                ;;
+
+        esac
+
         RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$API_KEY" \
         -H "Content-Type: application/json" \
-        -d '{
-            "contents": [
-              {
-                "parts": [
-                  {
-                    "text": "'"$PROMPT"'"
-                  }
-                ]
-              }
-            ]
-        }')
+        -d '{"contents": [{"parts": [{"text": "'"$PROMPT"'"}]}]}' )
         
-        # Uncomment below for debugging
-        #echo "Response:"
-        #echo "$RESPONSE"
-        
-        # Extract the insights from the API response
         INSIGHTS=$(echo $RESPONSE | jq -r '.candidates[0].content.parts[0].text')
         
-        # Append the AI-generated insights to the output file if saved to file
         if [[ "$output_to_file" == "y" ]]; then
             echo -e "\nAI-Generated Insights:\n$INSIGHTS" >> "$output_file"
         else
-            # Display the AI-generated insights
-            #display_asterisk
-            echo -e "${YELLOW}"
-            echo -e "+-----------------------------+"
+            echo -e "\n+-----------------------------+"
             echo -e "|          Insights           |"
             echo -e "+-----------------------------+"
-            echo -e "${BLUE}"
             echo -e "$INSIGHTS"
-            echo -e "${NC}"
-            echo -e "${YELLOW}"
             echo -e "+-----------------------------+"
-
-            #display_asterisk
         fi
     fi
 }
