@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Display the Banner
@@ -21,7 +22,8 @@ display_main_menu() {
     echo -e "${BCyan}2)${NC} ${White}Secure Code Review Tools${NC}"
 	echo -e "${BCyan}3)${NC} ${White}IoT Security Tools${NC}"
     echo -e "${BCyan}4)${NC} ${White}Step by Step Guide${NC}"
-    echo -e "${BCyan}5)${NC} ${White}Exit${NC}"
+    echo -e "${BCyan}5)${NC} ${White}Automated Processes${NC}"  
+    echo -e "${BCyan}6)${NC} ${White}Exit${NC}" 
     echo -e "${BYellow}╚════════════════════════════════╝${NC}"
 }
 
@@ -101,6 +103,20 @@ display_step_by_step_guide_menu() {
     echo -e "${BCyan}2)${NC} ${White}Learn about Secure code review tools${NC}"
 	echo -e "${BCyan}3)${NC} ${White}Learn about IoT Security tools${NC}"
     echo -e "${BCyan}4)${NC} ${White}Go Back${NC}"
+    echo -e "${BYellow}╚════════════════════════════════════════════╝${NC}"
+}
+
+# Function to display Automated Processes menu
+display_automated_processes_menu() {
+    echo -e "\n${BYellow}╔════════════════════════════════════════════╗${NC}"
+    echo -e "${BYellow}║        Automated Processes               ║${NC}"
+    echo -e "${BYellow}╚════════════════════════════════════════════╝${NC}"
+    echo -e "${BCyan}1)${NC} ${White}Reconnaissance${NC}"
+    echo -e "${BCyan}2)${NC} ${White}Vulnerability Scanning${NC}"
+    echo -e "${BCyan}3)${NC} ${White}Exploitation${NC}"
+    echo -e "${BCyan}4)${NC} ${White}Post-Exploitation${NC}"
+    echo -e "${BCyan}5)${NC} ${White}Reporting${NC}"
+    echo -e "${BCyan}0)${NC} ${White}Go Back${NC}"
     echo -e "${BYellow}╚════════════════════════════════════════════╝${NC}"
 }
 
@@ -244,6 +260,46 @@ handle_step_by_step_guide(){
     done
     
 }
+# Function to handle Automated Processes menu
+handle_automated_processes_menu() {
+    local choice
+    while true; do
+        display_automated_processes_menu
+        read -p "Choose an option: " choice
+        case $choice in
+            1) run_automated_reconnaissance_scan ;; # Placeholder for Reconnaissance
+            2) run_vulnerability_scanning_process ;; # Placeholder
+            3) run_exploitation_process ;; # Placeholder
+            4) run_post_exploitation_process ;; # Placeholder
+            5) run_reporting_process ;; # Placeholder
+            0) break ;; # Go back to main menu
+            *) echo -e "${RED}Invalid choice, please try again.${NC}" ;;
+        esac
+    done
+}
+
+# Placeholder functions for automated processes (to be implemented later)
+run_automated_reconnaissance_scan() {
+    echo "Running Automated Reconnaissance Scan..."
+   "$SCRIPT_DIR/automate_reconnaissance.sh" # Execute  automate_reconnaissance.sh script
+}
+
+run_vulnerability_scanning_process() {
+    echo "Running Vulnerability Scanning Process... (Placeholder)"
+}
+
+run_exploitation_process() {
+    echo "Running Exploitation Process... (Placeholder)"
+}
+
+run_post_exploitation_process() {
+    echo "Running Post-Exploitation Process... (Placeholder)"
+}
+
+run_reporting_process() {
+    echo "Running Reporting Process... (Placeholder)"
+}
+
 
 handle_step_by_step_guide_SCR(){
     
