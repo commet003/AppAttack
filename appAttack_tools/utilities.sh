@@ -87,21 +87,26 @@ generate_ai_insights() {
     local output="$1" # Tool output
     local output_to_file="$2" # Output to file (either y or n)
     local output_file="$3" # Output file directory
+    local tool="$4"
     
     read -p "Do you want to get AI-generated insights on the scan? (y/n): " ai_insights
 
     if [[ "$ai_insights" == "y" ]]; then
         # Use existing Google Gemini API key or replace with your own one
-        API_KEY="AIzaSyBaGoV4EC9vhhypqeB5lG1OEkT-SsT_1tw"
+        API_KEY="AIzaSyArtxMDmBUmWhjFIyubbzyM8LiGHgk8OEg"
+        # Checking parsers 
+        tool_parser="parsers/${tool}_parser.py"
+        if [[ -f "$tool_parser" ]]; then
+            PYTHON_RESPONSE=$(python3 "$tool_parser" "$output_file")
+            PROMPT=$(echo "$PYTHON_RESPONSE" | jq -r '.prompt')
+        else
+        # Fallback to raw output if parser not found
+            escaped_output=$(echo "$output" | sed 's/"/\\"/g')
+            PROMPT="Analyze this output and provide insights: $escaped_output"
+        fi
 
-        # Escape special characters in the output to safely include it in JSON
-        escaped_output=$(echo "$output" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
-
-        # Format the data for the Gemini API
-        PROMPT="Analyze this output and provide insights: $escaped_output"
-        
         # Call Gemini API using curl
-        RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$API_KEY" \
+        RESPONSE=$(curl -s -X POST  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$API_KEY" \
         -H "Content-Type: application/json" \
         -d '{
             "contents": [
@@ -114,7 +119,7 @@ generate_ai_insights() {
               }
             ]
         }')
-        
+
         # Uncomment below for debugging
         #echo "Response:"
         #echo "$RESPONSE"
