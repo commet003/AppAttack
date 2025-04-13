@@ -170,8 +170,36 @@ run_owasp_zap() {
     # Call the function to generate AI insights based on OWASP ZAP output
     generate_ai_insights "$zap_ai_output" "$output_to_file" "$output_file"
     echo -e "${GREEN} OWASP ZAP Operation completed.${NC}"
+}
 
+run_owasp_zap_headless() {
+    OUTPUT_DIR=$1
+    URL=$2
+    PORT=$3
+    output_file="${OUTPUT_DIR}/zap_output.txt"
 
+    zap.sh -daemon -host $URL -port $PORT -config api.disablekey=true &
+    ZAP_PID=$!
+    sleep 15 # wait for ZAP to fully initialize
+
+    log "Triggering active scan via ZAP API..."
+    curl -s "$URL:$PORT/JSON/ascan/action/scan/?url=$TARGET_URL" > /dev/null
+
+    # Wait for scan to complete
+    log "Waiting for ZAP scan to finish..."
+    while true; do
+        STATUS=$(curl -s "$URL:$PORT/JSON/ascan/view/status/" | grep -oE '"status":"[0-9]+"' | cut -d':' -f2 | tr -d '"')
+        [ "$STATUS" == "100" ] && break
+        sleep 5
+    done
+
+    log "ZAP scan completed. Exporting results..."
+    curl -s "$URL:$PORT/OTHER/core/other/xmlreport/" -o "$ZAP_OUTPUT"
+
+    generate_ai_insights "$zap_ai_output" "$output_to_file" "$output_file"
+
+    # Kill ZAP
+    kill "$ZAP_PID"
 }
 
 
