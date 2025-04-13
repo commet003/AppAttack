@@ -189,6 +189,26 @@ generate_ai_insights() {
             "wifiphisher")
                 PROMPT="This scan is from Wifiphisher, a tool used to simulate Wi-Fi phishing attacks. Review the captured interactions and identify potential user deception strategies or social engineering weaknesses:\n$escaped_output"
                 ;;
+             #Secure Code Review Tools   
+            "osv-scanner")
+                PROMPT="Analyze the results from OSV-Scanner. List any identified open-source software vulnerabilities along with CVEs. Suggest remediation steps or dependency upgrades for the most critical vulnerabilities:\n$escaped_output"
+                ;;
+
+            "snyk")
+                PROMPT="This is output from the Snyk CLI. Summarize the security issues found in the code or dependencies. Highlight the severity, affected packages, and offer remediation strategies such as patches, upgrades, or coding changes:\n$escaped_output"
+                ;;
+
+            "brakeman")
+                PROMPT="This is a scan report from Brakeman, a security tool for Ruby on Rails applications. Identify major vulnerabilities such as SQL injection, command injection, or mass assignment issues. Suggest how to mitigate them following secure Rails practices:\n$escaped_output"
+                ;;
+
+            "bandit")
+                PROMPT="This is a Python security linter output from Bandit. Summarize the detected code issues and their severity. Recommend secure coding alternatives for dangerous function calls or insecure patterns:\n$escaped_output"
+                ;;
+
+            "sonarqube")
+                PROMPT="This is a code quality and security scan output from SonarQube. Identify major security hotspots or code smells. Explain the impact of critical issues and suggest secure coding improvements:\n$escaped_output"
+                ;;    
                       
             *)
                 PROMPT="Analyze the security scan results and provide insights.\n$escaped_output"
