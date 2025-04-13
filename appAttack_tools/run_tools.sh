@@ -388,6 +388,17 @@ run_wapiti() {
     echo -e "${GREEN}Wapiti scan completed. Results saved to $output_file.${NC}"
 }
 
+run_wapiti_automated() {
+    OUTPUT_DIR=$1
+    URL=$2
+
+    output_file="${OUTPUT_DIR}/wapiti_report.txt"
+
+    wapiti_ai_output=$(wapiti -u "$url" -f json -o "$output_file")
+    generate_ai_insights "$wapiti_ai_output"
+    echo "Wapiti report saved to $output_file"
+}
+
 
 # Function to run TShark (Wireshark CLI)
 run_tshark() {
