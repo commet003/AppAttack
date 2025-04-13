@@ -118,6 +118,17 @@ run_nikto() {
     echo -e "${GREEN} Nikto Operation completed.${NC}"
 }
 
+run_nikto_automated() {
+    OUTPUT_DIR=$1
+    URL=$2
+
+    output_file="${OUTPUT_DIR}/nikto_output.txt"
+
+    nikto_ai_output=$(nikto -h "$URL" -o "$output_file" -Format "$format")
+    generate_ai_insights "$nikto_ai_output" "$output_to_file" "$output_file"
+    echo "Nikto scan completed." 
+}
+
 
 
 # Function to run LEGION
