@@ -191,7 +191,7 @@ generate_ai_insights() {
                 ;;
              #Secure Code Review Tools   
             "osv-scanner")
-                PROMPT="Analyze the results from OSV-Scanner. List any identified open-source software vulnerabilities along with CVEs. Suggest remediation steps or dependency upgrades for the most critical vulnerabilities:\n$escaped_output"
+                PROMPT="Act as a cybersecurity expert and Analyze the results from OSV-Scanner. List all identified open-source software vulnerabilities along with CVEs in the order of criticality with score. Suggest remediation steps or dependency upgrades for each identified vulnerabilities:\n$escaped_output"
                 ;;
 
             "snyk")
@@ -199,11 +199,13 @@ generate_ai_insights() {
                 ;;
 
             "brakeman")
-                PROMPT="This is a scan report from Brakeman, a security tool for Ruby on Rails applications. Identify major vulnerabilities such as SQL injection, command injection, or mass assignment issues. Suggest how to mitigate them following secure Rails practices:\n$escaped_output"
+                PROMPT="Act as a cybersecurity expert and analyze this scan report from Brakeman, a security tool for Ruby on Rails applications. Identify major vulnerabilities such as SQL injection, command injection, or mass assignment issues. Suggest how to mitigate them following secure Rails practices under each identified issue:\n$escaped_output"
+                #Act as a cybersecurity expert and analyze this scan report from Brakeman, a security tool for Ruby on Rails applications. Identify major vulnerabilities such as SQL injection, command injection, or mass assignment issues. Suggest how to mitigate them following secure Rails practices under each identified issue
                 ;;
 
             "bandit")
-                PROMPT="This is a Python security linter output from Bandit. Summarize the detected code issues and their severity. Recommend secure coding alternatives for dangerous function calls or insecure patterns:\n$escaped_output"
+                PROMPT="Act as a cybersecurity expert analyze the  Python security linter output from Bandit. Describe the detected code issues and their severity and  recommend secure coding alternatives for dangerous function calls or insecure patterns under each identified issue:\n$escaped_output"
+                #Act as a cybersecurity expert analyze the  Python security linter output from Bandit. Describe the detected code issues and their severity and  recommend secure coding alternatives for dangerous function calls or insecure patterns under each identified issue
                 ;;
 
             "sonarqube")
