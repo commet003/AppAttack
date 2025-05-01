@@ -1,4 +1,21 @@
 #!/bin/bash
+# Load .env from fixed path
+ENV_PATH="/opt/appAttack_toolkit/.env"
+if [ -f "$ENV_PATH" ]; then
+    set -a
+    source "$ENV_PATH"
+    set +a
+else
+    echo "Error: .env file not found at $ENV_PATH"
+    exit 1
+fi
+
+# Check if GEMINI_API_KEY is set
+if [ -z "$GEMINI_API_KEY" ]; then
+    echo "Error: GEMINI_API_KEY is not set. Please check your .env file."
+    exit 1
+fi
+
 # Define the log file path where the script logs messages
 LOG_FILE="$HOME/security_tools.log"
 
@@ -115,7 +132,13 @@ generate_ai_insights() {
     read -p "Do you want to get AI-generated insights on the scan? (y/n): " ai_insights
 
     if [[ "$ai_insights" == "y" ]]; then
-        API_KEY="AIzaSyAhwCR0ovpMGOPqkomiDhOBFunKC_TcIXw"
+        API_KEY="$GEMINI_API_KEY"
+        
+         if [ -z "$API_KEY" ]; then
+            echo "❌ Error: GEMINI_API_KEY is not set. Please check your .env file."
+            return 1
+        fi
+
 
         # Escape scan output
         escaped_output=$(echo "$output" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
