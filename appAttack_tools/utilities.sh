@@ -115,7 +115,7 @@ generate_ai_insights() {
     read -p "Do you want to get AI-generated insights on the scan? (y/n): " ai_insights
 
     if [[ "$ai_insights" == "y" ]]; then
-        API_KEY="YOUR_GEMINI_API_KEY"
+        API_KEY="AIzaSyAhwCR0ovpMGOPqkomiDhOBFunKC_TcIXw"
 
         # Escape scan output
         escaped_output=$(echo "$output" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
