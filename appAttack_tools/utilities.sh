@@ -92,7 +92,7 @@ generate_ai_insights() {
 
     if [[ "$ai_insights" == "y" ]]; then
         # Use existing Google Gemini API key or replace with your own one
-        API_KEY="AIzaSyBaGoV4EC9vhhypqeB5lG1OEkT-SsT_1tw"
+        API_KEY="AIzaSyD2T9-vTk4Qf_LCx6kw1oNgHuGbKvGoNQ8"
 
         # Escape special characters in the output to safely include it in JSON
         escaped_output=$(echo "$output" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
