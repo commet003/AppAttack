@@ -57,11 +57,17 @@ run_bandit() {
 # Function to run SonarQube
 run_sonarqube() {
     OUTPUT_DIR=$1
-    output_file="${OUTPUT_DIR}/sonarqube_output.txt"
+    output_file="${OUTPUT_DIR}/sonarqube_output"
 
-    # Check if SonarQube Docker container is already running or exists
+    # Ensure Docker is installed
+    if ! command -v docker &> /dev/null; then
+        echo -e "${RED}Error: Docker is not installed. Please install Docker to run SonarQube.${NC}"
+        return 1
+    fi
+
+    # Remove any existing SonarQube container
     if sudo docker ps -a --format '{{.Names}}' | grep -w "sonarqube" > /dev/null; then
-        echo -e "${YELLOW}A container named 'sonarqube' already exists. Removing the existing container...${NC}"
+        echo -e "${YELLOW}Removing existing 'sonarqube' container...${NC}"
         sudo docker rm -f sonarqube
     fi
 
@@ -69,26 +75,26 @@ run_sonarqube() {
     sudo docker run -d --name sonarqube -p 9001:9000 sonarqube
 
     echo -e "${GREEN}SonarQube is running at http://localhost:9001${NC}"
-    echo "Default credentials: "
+    echo "Default credentials:"
     echo "login: admin"
     echo "password: admin"
 
-    # Capture SonarQube logs
+    # Ask user for project key
+    read -p "Enter the SonarQube project key used during scan: " project_key
+
+    echo -e "${CYAN}Querying SonarQube API for issues in project: $project_key${NC}"
+    
+    # Query the API for vulnerabilities, bugs, and code smells
+    sonarqube_output=$(curl -s "http://localhost:9001/api/issues/search?componentKeys=$project_key&types=VULNERABILITY,BUG,CODE_SMELL")
+
+    # Optionally save API output
     if [[ "$output_to_file" == "y" ]]; then
-        # Show the logs on the screen and capture them in a file using 'tee'
-        sudo docker logs -f sonarqube | tee "$output_file.txt" > "$output_file_log.txt"
-        sonarqube_output=$(cat "$output_file_log.txt")
-    else
-        # Capture the logs in a variable and display them
-        sonarqube_output=$(sudo docker logs -f sonarqube 2>&1)
-        echo "$sonarqube_output"
+        echo "$sonarqube_output" > "${output_file}_api.json"
     fi
 
-    # Call the function to generate AI insights based on SonarQube logs
-    generate_ai_insights "$sonarqube_output" "$output_to_file" "$output_file.txt"
-    echo -e "${GREEN}SonarQube operation completed.${NC}"
-
-
+    # Generate AI insights based on actual SonarQube findings
+    generate_ai_insights "$sonarqube_output" "$output_to_file" "${output_file}.txt" "sonarqube"
+    echo -e "${GREEN}SonarQube operation completed with real issue data.${NC}"
 }
 
 # Function to run Nikto
@@ -217,84 +223,75 @@ run_metasploit() {
 }
 
 # Function to run osv-scanner
-run_osv_scanner(){
+run_osv_scanner() {
     OUTPUT_DIR=$1
     output_file="${OUTPUT_DIR}/osvscanner_output.txt"
 
     read -p "Enter directory to scan: " directory
     source ~/.bashrc
+
     if [[ "$output_to_file" == "y" ]]; then
-        osv_output=$(osv-scanner --format table --output "$output_file" -r "$directory")
-    echo "$osv_output" > "$output"
+        osv_output=$(osv-scanner --format json -r "$directory")
+        echo "$osv_output" > "$output_file"
     else
-        osv_output=$(osv-scanner --recursive "$directory")
-        osv-scanner --recursive "$directory"
+        osv_output=$(osv-scanner --format json -r "$directory")
+        echo "$osv_output"
     fi
-    generate_ai_insights "$osv_output"
-    echo -e "${GREEN} OSV-Scanner Operation completed.${NC}"
+
+    generate_ai_insights "$osv_output" "$output_to_file" "$output_file"
+    echo -e "${GREEN}OSV-Scanner operation completed.${NC}"
 }
 
 # Function to run snyk cli
-run_snyk(){
+run_snyk() {
     OUTPUT_DIR=$1
     output_file="${OUTPUT_DIR}/snyk_output.txt"
 
     # Check if Snyk is authenticated
-	snyk_auth_check=$(snyk auth --help | grep -i "You are authenticated")
-	if [[ -z "$snyk_auth_check" ]]; then
-		echo -e "${YELLOW}Snyk is not authenticated. Redirecting to browser for authentication...${NC}"
-		snyk auth
-		# Check if authentication was successful
-		if [[ $? -ne 0 ]]; then
-			echo -e "${RED}Snyk authentication failed! ${NC}"
-			read -p "Would you like to retry authentication? (y/n): " retry
-			if [[ "$retry" == "y" ]]; then
-				snyk auth
-			else
-				echo -e "${RED}Snyk authentication failed! ${NC}"
-				exit 1
-			fi
-		else
-			echo -e "${GREEN}Snyk authentication successful!${NC}"
-		fi
-	else
-		echo -e "${GREEN}Snyk is already authenticated.${NC}"
-	fi
-    
+    snyk_auth_status=$(snyk auth --help | grep -i "You are authenticated")
+    if [[ -z "$snyk_auth_status" ]]; then
+        echo -e "${YELLOW}Snyk is not authenticated. Redirecting to browser...${NC}"
+        snyk auth
+        if [[ $? -ne 0 ]]; then
+            echo -e "${RED}Authentication failed. Aborting.${NC}"
+            return 1
+        fi
+    else
+        echo -e "${GREEN}Snyk is already authenticated.${NC}"
+    fi
+
     read -p "Select Snyk option:
     1) Run code test locally
-    2) Monitor for vulnerabilities and see results in Snyk UI
-    Enter your choice (1/2): " snyk_option
+    2) Monitor for vulnerabilities (uploads to Snyk UI)
+Enter your choice (1/2): " snyk_option
+
+    read -p "Enter directory to scan (default is ./): " directory
+    directory=${directory:-.}
+
     case $snyk_option in
-        1)   if [[ "$output_to_file" == "y" ]]; then
-                read -p "Enter directory to scan (current directory ./): " directory
-                snyk_output=$(snyk code test $directory)
-            echo "$snyk_output" > $output_file
-                echo -e "${GREEN} SNYK Operation completed.${NC}"
-            else
-                read -p "Enter directory to scan (current directory ./): " directory
-                snyk code test $directory
-                snyk_output=$(snyk code test $directory)
-                echo -e "${GREEN} SNYK Operation completed.${NC}"
+        1)
+            echo -e "${CYAN}Running Snyk code test locally...${NC}"
+            snyk_output=$(snyk code test "$directory")
+            if [[ "$output_to_file" == "y" ]]; then
+                echo "$snyk_output" > "$output_file"
             fi
-        ;;
-        2) if [[ "$output_to_file" == "y" ]]; then
-                read -p "Enter directory to scan (current directory ./): " directory
-                snyk_output=$(snyk monitor $directory --all-projects > $output_file)
-                echo "$snyk_output" > "$output"
-                echo -e "${GREEN} SNYK Operation completed.${NC}"
-            else
-                snyk_output=$(snyk monitor $directory --all-projects)
-                echo -e "${GREEN} SNYK Operation completed.${NC}"
+            ;;
+        2)
+            echo -e "${CYAN}Running Snyk monitor for project tracking...${NC}"
+            snyk_output=$(snyk monitor "$directory" --all-projects)
+            if [[ "$output_to_file" == "y" ]]; then
+                echo "$snyk_output" > "$output_file"
             fi
-            echo -e "${GREEN} SNYK Operation completed.${NC}"
-        ;;
+            ;;
         *)
-            echo -e "${RED}Invalid choice!${NC}"
-        ;;
+            echo -e "${RED}Invalid choice. Aborting.${NC}"
+            return 1
+            ;;
     esac
-    generate_ai_insights "$snyk_output"
-    echo -e "${GREEN} SNYK Operation completed.${NC}"
+
+    # Run Gemini AI if requested
+    generate_ai_insights "$snyk_output" "$output_to_file" "$output_file"
+    echo -e "${GREEN}SNYK operation completed.${NC}"
 }
 
 # Function to run Brakeman
