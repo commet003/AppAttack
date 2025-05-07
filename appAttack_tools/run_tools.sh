@@ -2,37 +2,31 @@
 
 
 # Function to run nmap
-run_nmap(){
+run_nmap() {
     OUTPUT_DIR=$1
     isIoTUsage=$2
-
     output_file="${OUTPUT_DIR}/nmap_output.txt"
 
+    echo -e "${NC}"
+    read -p "Enter IP address or network range to scan (e.g., 192.168.1.0/24): " target
 
-    # Prompt user for URL or IP address
-    read -p "Enter URL or IP address to scan: " url
-
-
-    # Handle file output and IoT usage
     if [[ "$output_to_file" == "y" ]]; then
         if [[ "$isIoTUsage" == "true" ]]; then
-            nmap_output=$(nmap --top-ports 100 -v -iR 100 -oN "$output_file" "$url")
+            nmap_output=$(nmap --top-ports 100 -v "$target" | tee "$output_file")
         else
-            nmap_output=$(nmap -oN "$output_file" "$url")
+            nmap_output=$(nmap -v "$target" | tee "$output_file")
         fi
     else
         if [[ "$isIoTUsage" == "true" ]]; then
-            nmap_output=$(nmap --top-ports 100 -v -iR 100 "$url")
-            echo "$nmap_output"
+            nmap_output=$(nmap --top-ports 100 -v "$target")
         else
-            nmap_output=$(nmap "$url")
-            echo "$nmap_output"
+            nmap_output=$(nmap -v "$target")
         fi
+        echo "$nmap_output"
     fi
 
-    # Call the generate_ai_insights function with the Nmap output
-    generate_ai_insights "$nmap_output"
-    echo -e "${GREEN}Nmap Operation completed.${NC}"
+    generate_ai_insights "$nmap_output" "$output_to_file" "$output_file" "nmap"
+    echo -e "${GREEN}Nmap scan completed.${NC}"
 }
 
 # Function to run Bandit
@@ -50,7 +44,7 @@ run_bandit() {
         echo -e "${NC}"
         echo "$bandit_output"
     fi
-    generate_ai_insights "$bandit_output"
+    generate_ai_insights "generate_ai_insights "$bandit_output"" "$output_to_file" "$output_file"
     echo -e "${GREEN} Bandit operation completed.${NC}"
 }
 
@@ -110,7 +104,7 @@ run_nikto() {
         nikto_output=$(nikto -h "$url")
         nikto -h "$url"
     fi
-    generate_ai_insights "$nikto_output"
+    generate_ai_insights "generate_ai_insights "$nikto_output"" "$output_to_file" "$output_file"
     echo -e "${GREEN} Nikto Operation completed.${NC}"
 }
 
@@ -132,7 +126,7 @@ run_legion() {
     fi
 
     # Call the function to generate AI insights based on Legion output
-    generate_ai_insights "$legion_output" "$output_to_file" "$output_file"
+    generate_ai_insights "generate_ai_insights "$legion_output"" "$output_to_file" "$output_file" "$output_to_file" "$output_file"
     echo -e "${GREEN} Legion operation completed.${NC}"
 
 
@@ -155,7 +149,7 @@ run_owasp_zap() {
         echo "$zap_output"
     fi
     # Call the function to generate AI insights based on OWASP ZAP output
-    generate_ai_insights "$zap_output" "$output_to_file" "$output_file"
+    generate_ai_insights "generate_ai_insights "$zap_output"" "$output_to_file" "$output_file" "$output_to_file" "$output_file"
     echo -e "${GREEN} OWASP ZAP Operation completed.${NC}"
 
 
@@ -181,7 +175,7 @@ run_john() {
     fi
 
     # Call the function to generate AI insights based on John the Ripper output
-    generate_ai_insights "$john_output" "$output_to_file" "$output_file"
+    generate_ai_insights "generate_ai_insights "$john_output"" "$output_to_file" "$output_file" "$output_to_file" "$output_file"
     echo -e "${GREEN} John the Ripper operation completed.${NC}"
 
 
@@ -206,7 +200,7 @@ run_sqlmap() {
     echo -e "${GREEN} SQLmap operation completed.${NC}"
 
     # Call the function to generate AI insights based on sqlmap output
-    generate_ai_insights "$sqlmap_output" "$output_to_file" "$output_file"
+    generate_ai_insights "generate_ai_insights "$sqlmap_output"" "$output_to_file" "$output_file" "$output_to_file" "$output_file"
 }
 
 # Function to run Metasploit
@@ -306,7 +300,7 @@ run_brakeman(){
         brakeman_output=$(sudo brakeman "$directory" --force)
         sudo brakeman "$directory" --force
     fi
-    generate_ai_insights "$brakeman_output"
+    generate_ai_insights "generate_ai_insights "$brakeman_output"" "$output_to_file" "$output_file"
     echo -e "${GREEN} Brakeman Operation completed.${NC}"
 }
 
@@ -331,7 +325,7 @@ run_wapiti() {
         wapiti_output=$(wapiti -u "$url")
     fi
     
-    generate_ai_insights "$wapiti_output"
+    generate_ai_insights "generate_ai_insights "$wapiti_output"" "$output_to_file" "$output_file"
     echo -e "${GREEN}Wapiti scan completed. Results saved to $output_file.${NC}"
 }
 
@@ -341,7 +335,6 @@ run_tshark() {
     OUTPUT_DIR=$1
     output_file="${OUTPUT_DIR}/tshark_output.txt"
 
-
     echo -e "${NC}" 
     tshark -D
     echo -e "${NC}"
@@ -350,18 +343,17 @@ run_tshark() {
 
     echo "Starting Wireshark scan now on interface $interface..."
 
-
-    # Capture the output of the Wireshark command
     if [[ "$output_to_file" == "y" ]]; then
-        tshark_output=$(tshark -i "$interface" -c "$packets_limit")
-        echo "$tshark_output" > "$output_file"
+        tshark_output=$(tshark -i "$interface" -c "$packets_limit" 2>&1 | tee "$output_file")
+        echo -e "${GREEN}TShark operation completed. Results saved to $output_file.${NC}"
     else
-        tshark_output=$(tshark -i "$interface" -c "$packets_limit")
+        tshark_output=$(tshark -i "$interface" -c "$packets_limit" 2>&1)
         echo -e "${NC}"
         echo "$tshark_output"
+        echo -e "${GREEN}TShark operation completed.${NC}"
     fi
-    generate_ai_insights "$tshark_output"
-    echo -e "${GREEN} TShark operation completed.${NC}"
+
+    generate_ai_insights "$tshark_output" "$output_to_file" "$output_file" "wireshark"
 }
 
 # Function to run Binwalk
@@ -369,65 +361,112 @@ run_binwalk() {
     OUTPUT_DIR=$1
     output_file="${OUTPUT_DIR}/binwalk_output.txt"
 
-    echo -e "${NC}" 
+    echo -e "${NC}"
     read -p "Enter the path to the file you want to scan: " path_to_target
 
-    if [[ "$output_to_file" == "y" ]]; then
-        binwalk_output=$(binwalk -Y -f "$output_file" "$path_to_target")
-    else
-        binwalk_output=$(binwalk -Y "$path_to_target")
-        echo -e "${NC}"
-        echo "$binwalk_output"
+    if [[ ! -f "$path_to_target" ]]; then
+        echo -e "${RED}File not found. Please enter a valid path.${NC}"
+        return
     fi
-    
-    generate_ai_insights "$binwalk_output"
-    echo -e "${GREEN}Binwalk scan completed. Results saved to $output_file.${NC}"
+
+    echo -e "${CYAN}Running Binwalk with signature, entropy, and extraction...${NC}"
+
+    if [[ "$output_to_file" == "y" ]]; then
+        sudo binwalk --signature -B -e --run-as=root "$path_to_target" > "$output_file"
+        binwalk_output=$(cat "$output_file")
+    else
+        binwalk_output=$(sudo binwalk --signature -B -e --run-as=root "$path_to_target")
+        echo -e "${NC}$binwalk_output"
+    fi
+
+    generate_ai_insights "generate_ai_insights \"$binwalk_output\"" "$output_to_file" "$output_file"
+    echo -e "${GREEN}Binwalk scan complete. Results saved to $output_file.${NC}"
 }
 
 # Function to run Hashcat
 run_hashcat() {
-    OUTPUT_DIR=$1
+    OUTPUT_DIR="$1"
+    mkdir -p "$OUTPUT_DIR"
     output_file="${OUTPUT_DIR}/hashcat_output.txt"
 
     echo -e "${NC}"
-    read -p "Enter the hash mode: " hash_mode
-    read -p "Enter the attack mode: " attack_mode
-    read -p "Enter the hash file path: " hash_file_path
-    
-    echo -e "${NC}"
-    echo -e "${BCyan}Hashcat attack starting..."
+    read -p "Enter the hash mode (e.g., 0 for MD5, 1000 for NTLM): " hash_mode
+    read -p "Enter the attack mode (0 = dictionary, 3 = brute-force): " attack_mode
+    read -p "Enter the path to the hash file: " hash_file_path
 
-    if [[ "$output_to_file" == "y" ]]; then
-        hashcat_output=$(hashcat -m "$hash_mode" -a "$attack_mode" -i --increment-min=4 --increment-max=8 "$hash_file_path" ?a?a?a?a?a?a?a?a --outfile "$output_file")
-    else
-        hashcat_output=$(hashcat -m "$hash_mode" -a "$attack_mode" -i --increment-min=4 --increment-max=8 "$hash_file_path" ?a?a?a?a?a?a?a?a)
-        echo -e "${NC}"
-        echo "$hashcat_output"
+    if [[ ! -f "$hash_file_path" ]]; then
+        echo -e "${RED}Hash file not found. Please check the path and try again.${NC}"
+        return
     fi
-    
-    generate_ai_insights "$hashcat_output"
-    echo -e "${GREEN}Hashcat attack complete. Results saved to $output_file.${NC}"
+
+    read -p "Do you want to save the output to a file? (y/n): " save_to_file
+
+    echo -e "${BCyan}Starting Hashcat...${NC}"
+
+    if [[ "$attack_mode" == "0" ]]; then
+        read -p "Enter the path to your wordlist: " wordlist
+        if [[ ! -f "$wordlist" ]]; then
+            echo -e "${RED}Wordlist not found. Please check the path and try again.${NC}"
+            return
+        fi
+
+        if [[ "$save_to_file" == "y" ]]; then
+            hashcat_output=$(hashcat -m "$hash_mode" -a 0 "$hash_file_path" "$wordlist")
+            echo "$hashcat_output" > "$output_file"
+        else
+            hashcat_output=$(hashcat -m "$hash_mode" -a 0 "$hash_file_path" "$wordlist")
+            echo -e "${NC}"
+            echo "$hashcat_output"
+        fi
+
+    elif [[ "$attack_mode" == "3" ]]; then
+        read -p "Enter the brute-force mask (e.g., ?a?a?a?a): " mask
+
+        if [[ "$save_to_file" == "y" ]]; then
+            hashcat_output=$(hashcat -m "$hash_mode" -a 3 "$hash_file_path" "$mask")
+            echo "$hashcat_output" > "$output_file"
+        else
+            hashcat_output=$(hashcat -m "$hash_mode" -a 3 "$hash_file_path" "$mask")
+            echo -e "${NC}"
+            echo "$hashcat_output"
+        fi
+
+    else
+        echo -e "${RED}Unsupported attack mode. Currently only 0 (dictionary) and 3 (brute-force) are supported.${NC}"
+        return
+    fi
+
+    generate_ai_insights "$hashcat_output" "$save_to_file" "$output_file" "hashcat"
+    echo -e "${GREEN}Hashcat operation complete. Results saved to $output_file.${NC}"
 }
 
 # Function to run Aircrack-ng
 run_aircrack(){
-    output_file="${output}_aircrack"
+    OUTPUT_DIR=$1
+    output_file="${OUTPUT_DIR}/aircrack_output.txt"
+
     read -p "Enter the path to the .cap file: " cap_file
+    read -p "Enter the path to the wordlist: " wordlist
     read -p "Enter the Wi-Fi network's ESSID (optional, press Enter to skip): " essid
+
     if [[ "$output_to_file" == "y" ]]; then
         if [[ -n "$essid" ]]; then
             aircrack_output=$(aircrack-ng -w "$wordlist" -e "$essid" -l "$output_file" "$cap_file")
         else
             aircrack_output=$(aircrack-ng -w "$wordlist" -l "$output_file" "$cap_file")
         fi
+        echo "$aircrack_output" > "$output_file"
     else
         if [[ -n "$essid" ]]; then
-            aircrack-ng -w "$wordlist" -e "$essid" "$cap_file"
+            aircrack_output=$(aircrack-ng -w "$wordlist" -e "$essid" "$cap_file")
         else
-            aircrack-ng -w "$wordlist" "$cap_file"
+            aircrack_output=$(aircrack-ng -w "$wordlist" "$cap_file")
         fi
+        echo -e "${NC}"
+        echo "$aircrack_output"
     fi
-    generate_ai_insights "$aircrack_output"
+
+    generate_ai_insights "$aircrack_output" "$output_to_file" "$output_file"
     echo -e "${GREEN}Aircrack-ng operation completed.${NC}"
 }
 
@@ -454,13 +493,13 @@ run_miranda() {
         echo "$miranda_output"
     fi
     
-    generate_ai_insights "$miranda_output"
+    generate_ai_insights "generate_ai_insights "$miranda_output"" "$output_to_file" "$output_file"
     echo -e "${GREEN}Miranda testing complete. Results saved to $output_file.${NC}"
 }
 
 # Function to run Umap
 run_umap() {
-    OUTPUT_DIR=$1
+    OUTPUT_DIR=$1   #umap is currrently using outdated python 2
     output_file="${OUTPUT_DIR}/umap_output.txt"
     
     echo -e "${NC}"
@@ -478,8 +517,8 @@ run_umap() {
         echo "$umap_output"
     fi
     
-    generate_ai_insights "$umap_output"
-    echo -e "${GREEN}Miranda testing complete. Results saved to $output_file.${NC}"
+    generate_ai_insights "generate_ai_insights "$umap_output"" "$output_to_file" "$output_file"
+    echo -e "${GREEN}Umap testing complete. Results saved to $output_file.${NC}"
 }
 
 
@@ -538,32 +577,34 @@ run_scapy() {
 run_wifiphisher() {
     OUTPUT_DIR=$1
     output_file="${OUTPUT_DIR}/wifiphisher_output.txt"
-    
+
     echo -e "${CYAN}Launching Wifiphisher...${NC}"
-    
+
     read -p "Enter the network interface to use (e.g., wlan0): " interface
     read -p "Enter the target Wi-Fi network's ESSID (optional, press Enter to skip): " essid
-    
+
     if [[ -z "$interface" ]]; then
         echo -e "${RED}No interface provided. Exiting.${NC}"
         return
     fi
-    
+
     if [[ "$output_to_file" == "y" ]]; then
         if [[ -n "$essid" ]]; then
-            wifiphisher_output=$(sudo wifiphisher -i "$interface" --essid "$essid" > "$output_file" 2>&1)
+            wifiphisher_output=$(sudo wifiphisher -i "$interface" --essid "$essid" 2>&1 | tee "$output_file")
         else
-            wifiphisher_output=$(sudo wifiphisher -i "$interface" > "$output_file" 2>&1)
+            wifiphisher_output=$(sudo wifiphisher -i "$interface" 2>&1 | tee "$output_file")
         fi
         echo -e "${GREEN}Wifiphisher operation completed. Results saved to $output_file.${NC}"
     else
         if [[ -n "$essid" ]]; then
-            sudo wifiphisher -i "$interface" --essid "$essid"
+            wifiphisher_output=$(sudo wifiphisher -i "$interface" --essid "$essid" 2>&1)
         else
-            sudo wifiphisher -i "$interface"
+            wifiphisher_output=$(sudo wifiphisher -i "$interface" 2>&1)
         fi
+        echo "$wifiphisher_output"
         echo -e "${GREEN}Wifiphisher operation completed.${NC}"
     fi
+    generate_ai_insights "$wifiphisher_output" "$output_to_file" "$output_file" "wifiphisher"
 }
 
 # Function to run Reaver
@@ -601,20 +642,40 @@ run_reaver() {
 
 # Function to run Ncrack
 run_ncrack() {
-    OUTPUT_DIR=$1
-    output_file="${OUTPUT_DIR}/ncrack_output.txt"
+    output_file="$HOME/Documents/ncrack_output.txt"
 
-    echo -e "${NC}" 
-    read -p "Enter the target ip: " target_ip
-
-    if [[ "$output_to_file" == "y" ]]; then
-        ncrack_output=$(ncrack -T4 -p 23 "$target_ip" -oN "$output_file")
-    else
-        ncrack_output=$(ncrack -T4 -p 23 "$target_ip")
-        echo -e "${NC}"
-        echo "$ncrack_output"
+    echo -e "${NC}"
+    read -p "Enter the target IP: " target_ip
+    if [[ -z "$target_ip" ]]; then
+        echo -e "${RED}Target IP cannot be empty.${NC}"
+        return
     fi
-    
-    generate_ai_insights "$ncrack_output"
+
+    read -p "Enter the service port (e.g., 22 for SSH, 21 for FTP): " service_port
+    if [[ -z "$service_port" ]]; then
+        echo -e "${RED}Service port cannot be empty.${NC}"
+        return
+    fi
+
+    read -p "Enter the username to try: " username
+    if [[ -z "$username" ]]; then
+        echo -e "${RED}Username cannot be empty.${NC}"
+        return
+    fi
+
+    read -p "Enter the password to try: " password
+    if [[ -z "$password" ]]; then
+        echo -e "${RED}Password cannot be empty.${NC}"
+        return
+    fi
+
+    echo -e "${CYAN}Running Ncrack against $target_ip on port $service_port...${NC}"
+
+    ncrack_output=$(sudo ncrack -p "$service_port" --user "$username" --pass "$password" -oN "$output_file" "$target_ip")
+
+    echo "$ncrack_output"
+
+    generate_ai_insights "generate_ai_insights \"$ncrack_output\"" "y" "$output_file"
+
     echo -e "${GREEN}Ncrack scan completed. Results saved to $output_file.${NC}"
 }
