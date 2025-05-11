@@ -3,6 +3,9 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/automate_recon.sh"
+source "$SCRIPT_DIR/automate_scanning.sh"
+source "$SCRIPT_DIR/automate_exploitation.sh"
+source "$SCRIPT_DIR/automate_post_exploitation.sh"
 
 
 
@@ -289,19 +292,22 @@ handle_automated_processes_menu() {
 # Placeholder functions for automated processes (to be implemented later)
 run_automated_reconnaissance_scan() {
     echo "Running Automated Reconnaissance Scan..."
-   "run_reconnaissance_menu" # Execute  automate_reconnaissance.sh script
+    run_reconnaissance_menu
 }
 
 run_vulnerability_scanning_process() {
-    echo "Running Vulnerability Scanning Process... (Placeholder)"
+    echo "Running Vulnerability Scanning Process..."
+    run_vulnerability_scanning_menu
 }
 
 run_exploitation_process() {
-    echo "Running Exploitation Process... (Placeholder)"
+    echo "Running Exploitation Process..."
+    run_exploitation_menu
 }
 
 run_post_exploitation_process() {
-    echo "Running Post-Exploitation Process... (Placeholder)"
+    echo "Running Post-Exploitation Process..."
+    run_post_exploitation_menu
 }
 
 run_reporting_process() {
