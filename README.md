@@ -7,8 +7,7 @@ A comprehensive suite of security and network testing tools in a user-friendly i
 1. [Installation (Users)](#installation-users)
 2. [Development (Devs)](#development-devs)
 3. [Usage](#usage)
-4. [Branches](#branches)
-5. [Available Tools](#available-tools)
+4. [Available Tools](#available-tools)
 
 
 
@@ -23,7 +22,7 @@ Follow these steps to install and launch the toolkit:
    ```bash
    cd AppAttack/appAttack_tools
    ```
-3. Make installer executable:
+3. Make the installer executable:
    ```bash
    chmod +x install.sh
    ```
@@ -41,7 +40,7 @@ Follow these steps to install and launch the toolkit:
 ## Development (Devs)
 Streamline testing and installation when adding or updating features:
 
-- Ensure main script is executable:
+- Ensure the main script is executable:
   ```bash
   chmod +x main.sh
   ```
@@ -49,13 +48,13 @@ Streamline testing and installation when adding or updating features:
   ```bash
   ./main.sh
   ```
-- Full reinstall to validate installer:
+- Full reinstall to validate the installer:
   1. Remove previous install:
      ```bash
      sudo rm -rf /opt/appAttack_toolkit
      sudo rm /usr/local/bin/appAttack_toolkit
      ```
-  2. Re-run installer:
+  2. Re-run the installer:
      ```bash
      sudo ./install.sh
      ```
@@ -67,7 +66,7 @@ Streamline testing and installation when adding or updating features:
    appAttack_toolkit
    ```
 2. The script checks for and downloads dependencies.
-3. Choose to update (y) or skip (n) when prompted.
+3. When prompted, choose to update (y) or skip (n).
 4. Select the desired tool from the menu.
 5. Provide the path to the target directory or network.
 6. View the results in the output file (e.g., `~/appAttack_results.txt`).
