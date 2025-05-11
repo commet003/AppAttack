@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 
@@ -306,9 +305,24 @@ run_post_exploitation_process() {
 }
 
 run_reporting_process() {
-    echo "Running Reporting Process... (Placeholder)"
+    echo "Running Reporting Process..."
+    local base_dir="$SCRIPT_DIR/../output"
+    local report_file="$base_dir/final_report.md"
+    mkdir -p "$(dirname "$report_file")"
+    > "$report_file"
+    for phase in Reconnaissance Scanning Exploitation "Post-Exploitation"; do
+        phase_dir="$base_dir/$phase"
+        if [[ -d "$phase_dir" ]]; then
+            for input in "$phase_dir"/*; do
+                if [[ -f "$input" ]]; then
+                    tool_name=$(basename "$input" | sed 's/\..*//')
+                    "$SCRIPT_DIR/automate_reporting.sh" -t "$tool_name" -i "$input" -o "$report_file" -p "$phase" -f md
+                fi
+            done
+        fi
+    done
+    echo "Final report generated at $report_file"
 }
-
 
 handle_step_by_step_guide_SCR(){
     
