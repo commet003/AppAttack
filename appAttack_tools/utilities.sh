@@ -49,7 +49,7 @@ save_vulnerabilities() {
         ;;
         "john")
             # Run John the Ripper and save output to the file
-            john --show --format=raw-md5 "$input_file" > "$output_file"
+            run_john "$OUTPUT_DIR"
         ;;
         "sqlmap")
             # Run SQLmap scan and save output to the file
@@ -93,7 +93,7 @@ generate_ai_insights() {
 
     if [[ "$ai_insights" == "y" ]]; then
         # Use existing Google Gemini API key or replace with your own one
-        API_KEY="AIzaSyArtxMDmBUmWhjFIyubbzyM8LiGHgk8OEg"
+        API_KEY="AIzaSyDBYTKcjOULEOaocrtrWl_IYP0U7qd6SdA"
         # Checking parsers 
         tool_parser="parsers/${tool}_parser.py"
         if [[ -f "$tool_parser" ]]; then

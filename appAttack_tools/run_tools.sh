@@ -32,6 +32,8 @@ run_nmap(){
         fi
         echo "$nmap_ai_output"
         echo "$nmap_ai_output" > "$output_file"
+        echo "$nmap_ai_output" > "/tmp/nmap_ai_output.txt"
+        output_file="/tmp/nmap_ai_output.txt"
     fi
     echo "$nmap_ai_output" >> "$LOG_FILE"
     echo "Nmap scan completed." >> "$LOG_FILE"
@@ -174,31 +176,48 @@ run_owasp_zap() {
 
 }
 
-
-
-# Function to run John the Ripper
 run_john() {
     OUTPUT_DIR=$1
-    output_file="${OUTPUT_DIR}/john_output.txt"
 
-    read -p "Enter the path to the password file to crack: " password_file
-
-    if [[ "$output_to_file" == "y" ]]; then
-        # Capture the output of john to a file
-        john --session="$output_file" "$password_file" > "$output_file" 2>&1
-        john_output=$(cat "$output_file")
-    else
-        # Capture the output of john to a variable
-        john_output=$(john "$password_file" 2>&1)
-        echo "$john_output"
+    # Use a temp directory if OUTPUT_DIR is not set
+    if [[ -z "$OUTPUT_DIR" ]]; then
+        OUTPUT_DIR="/tmp/john_temp_$(date +%s)"
+        mkdir -p "$OUTPUT_DIR"
     fi
 
-    # Call the function to generate AI insights based on John the Ripper output
-    generate_ai_insights "$john_output" "$output_to_file" "$output_file"
-    echo -e "${GREEN} John the Ripper operation completed.${NC}"
+    output_file="${OUTPUT_DIR}/john_output.txt"
+    hash_file="${OUTPUT_DIR}/john_hash.txt"
 
 
+    read -p "Enter file to crack (.docx, .pdf, .zip, or .hash): " file_path
+
+    # Step 1: Extract hash if needed
+    if [[ "$file_path" == *.docx || "$file_path" == *.xlsx || "$file_path" == *.xls ]]; then
+        python3 /usr/share/john/office2john.py "$file_path" > "$hash_file"
+    elif [[ "$file_path" == *.pdf ]]; then
+        python3 /usr/share/john/pdf2john.py "$file_path" > "$hash_file"
+    elif [[ "$file_path" == *.zip ]]; then
+        zip2john "$file_path" > "$hash_file"
+    else
+        cp "$file_path" "$hash_file"
+    fi
+
+    # Step 2: Use local wordlist, you can add any wordlist to wordlist_for_John and update it here. 
+    wordlist="$SCRIPT_DIR/wordlist_for_John/test_wordlist.txt"
+    if [[ ! -f "$wordlist" ]]; then
+        echo -e "${RED}Wordlist not found at $wordlist. Aborting.${NC}"
+        return
+    fi
+
+    john --wordlist="$wordlist" "$hash_file" > "$output_file" 2>&1
+    john_show=$(john --show "$hash_file")
+    echo "$john_show" >> "$output_file"
+
+    generate_ai_insights "$john_show" "$output_to_file" "$output_file" "john"
+
+    echo -e "${GREEN}John the Ripper operation completed.${NC}"
 }
+
 
 
 # Function to run sqlmap

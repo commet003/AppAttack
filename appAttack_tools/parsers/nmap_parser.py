@@ -13,7 +13,7 @@ def parse_nmap_output(text):
         if "Nmap scan report for" in line:
             host = line.split("for")[-1].strip()
 
-        # Use regex to find lines indicating open TCP ports
+        # Use regex to find lines indicating open TCP ports``
         match = re.match(r"^(\d+/tcp)\s+open\s+(\S+)", line)
         if match:
             port, service = match.groups()
@@ -30,17 +30,21 @@ def parse_nmap_output(text):
 
     return parsed
 
-# Generates a text prompt based on the parsed Nmap data
 def generate_prompt(data):
-    prompt = f"Analyze this Nmap scan report for host {data.get('host', 'unknown')}:\n"
+    host = data.get("host", "unknown")
+    prompt = f"This is the result of a network scan for the device at {host}.\n\n"
+
     if not data["open_ports"]:
-        prompt += "- No open ports were found.\n"
+        prompt += "No open doors (called ports) were found on this device. That’s generally a good thing — it means there are fewer ways someone could try to connect without permission.\n"
     else:
-        prompt += "- The following ports are open:\n"
-        # List each open port and its service
+        prompt += "The scan found that the following doors (called ports) are open, which means someone could connect to them if they know how:\n\n"
         for p in data["open_ports"]:
-            prompt += f"  - Port: {p['port']}, Service: {p['service']}\n"
-        prompt += "\nPlease provide insights, possible vulnerabilities, and recommendations."
+            prompt += f"- Port {p['port']} is open and running a service called '{p['service']}'.\n"
+
+        prompt += (
+            "\nPlease explain what these open ports might mean in simple, non-technical language. "
+            "Give examples of what could happen if they are not secured, and suggest beginner-friendly steps someone could take to make their system safer."
+        )
 
     return prompt
 
