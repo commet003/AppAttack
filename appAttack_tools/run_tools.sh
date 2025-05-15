@@ -1,8 +1,6 @@
-#!/bin/bash 
-source utilities.sh
-LOG_FILE="$HOME/automated_scan.log"
+#!/bin/bash
 
->$LOG_FILE
+source ./utilities.sh
 
 # Function to run nmap
 run_nmap(){
@@ -10,33 +8,31 @@ run_nmap(){
     isIoTUsage=$2
 
     output_file="${OUTPUT_DIR}/nmap_output.txt"
-    
 
-    echo "running Nmap..." >> $LOG_FILE
 
     # Prompt user for URL or IP address
     read -p "Enter URL or IP address to scan: " url
-    
+
+
     # Handle file output and IoT usage
     if [[ "$output_to_file" == "y" ]]; then
         if [[ "$isIoTUsage" == "true" ]]; then
-            nmap_ai_output=$(nmap --top-ports 100 -v -iR 100 -oN "$output_file" "$url")
+            nmap_output=$(nmap --top-ports 100 -v -iR 100 -oN "$output_file" "$url")
         else
-            nmap_ai_output=$(nmap -oN "$output_file" "$url")
+            nmap_output=$(nmap -oN "$output_file" "$url")
         fi
     else
         if [[ "$isIoTUsage" == "true" ]]; then
-            nmap_ai_output=$(nmap --top-ports 100 -v -iR 100 "$ul")
-    else
-            nmap_ai_output=$(nmap "$url")
+            nmap_output=$(nmap --top-ports 100 -v -iR 100 "$url")
+            echo "$nmap_output"
+        else
+            nmap_output=$(nmap "$url")
+            echo "$nmap_output"
         fi
-        echo "$nmap_ai_output"
-        echo "$nmap_ai_output" > "$output_file"
     fi
-    echo "$nmap_ai_output" >> "$LOG_FILE"
-    echo "Nmap scan completed." >> "$LOG_FILE"
-    # Call the generate_ai_insights function with the Nmap output    
-    generate_ai_insights "$nmap_ai_output" "$output_to_file" "$output_file" 
+
+    # Call the generate_ai_insights function with the Nmap output
+    generate_ai_insights "$nmap_output"
     echo -e "${GREEN}Nmap Operation completed.${NC}"
 }
 
@@ -100,21 +96,16 @@ run_sonarqube() {
 run_nikto() {
     OUTPUT_DIR=$1
     output_file="${OUTPUT_DIR}/nikto_output.txt"
-    echo "Running Nikto..." >> $LOG_FILE
     read -p "Enter URL and port to scan (Example: http://localhost:4200): " url
     if [[ "$output_to_file" == "y" ]]; then
         read -p "Enter the output format (txt, html, xml): " format
-        nikto_ai_output=$(nikto -h "$url" -o "$output_file" -Format "$format")
+        nikto_output=$(nikto -h "$url" -o "$output_file" -Format "$format")
     echo "$nikto_output" > "$output_file"
     else
-        nikto_ai_output=$(nikto -h "$url")
+        nikto_output=$(nikto -h "$url")
         nikto -h "$url"
     fi
-    echo "$nikto_ai_output"
-    echo "$nikto_ai_output" > "$output_file"
-    echo "Nikto output saved to $nikto_output_file" >> $LOG_FILE
-    echo "Nikto scan completed." >> $LOG_FILE
-    generate_ai_insights "$nikto_ai_output" "$output_to_file" "$output_file"
+    generate_ai_insights "$nikto_output"
     echo -e "${GREEN} Nikto Operation completed.${NC}"
 }
 
@@ -147,34 +138,42 @@ run_legion() {
 run_owasp_zap() {
     OUTPUT_DIR=$1
     output_file="${OUTPUT_DIR}/zap_output.txt"
-    echo "running OWASP ZAP..." >> $LOG_FILE
     read -p "Enter URL and port to scan (Example: http://localhost:4200): " url
 
     if [[ "$output_to_file" == "y" ]]; then
         # Show the output on the screen and capture it in a file using 'tee'
         zap -quickurl $url | tee "$output_file" > "$output_file_log.txt"
-        zap_ai_output=$(cat "$output_file_log.txt")
+        zap_output=$(cat "$output_file_log.txt")
     else
         # Just show the output on the screen and capture it in a variable
-        zap_ai_output=$(zap -quickurl $url 2>&1)
-        echo "$zap_ai_output"
+        zap_output=$(zap -quickurl $url 2>&1)
+        echo "$zap_output"
     fi
-   auto_zap() {
-    echo "Running OWASP ZAP..." >> $LOG_FILE
-    zap_output_file="$HOME/zap_scan_output.txt"
-    zap_ai_output=$(zap -quickurl "http://$ip:$port" -cmd)
-    echo "$zap_ai_output" > "$zap_output_file"
-    echo "OWASP ZAP output saved to $zap_output_file" >> $LOG_FILE
-    echo "OWASP ZAP scan completed." >> $LOG_FILE
-}
     # Call the function to generate AI insights based on OWASP ZAP output
-    generate_ai_insights "$zap_ai_output" "$output_to_file" "$output_file"
+    generate_ai_insights "$zap_output" "$output_to_file" "$output_file"
     echo -e "${GREEN} OWASP ZAP Operation completed.${NC}"
 
+    echo -e "${CYAN}Launching OWASP ZAP GUI in the background...${NC}"
+    
+    # Run OWASP ZAP as a background process
+    nohup zaproxy > /dev/null 2>&1 &
+
+    echo -e "${GREEN}OWASP ZAP has been launched successfully.${NC}"
+    echo -e "${YELLOW}Please perform your scan using the GUI.${NC}"
+    echo -e "${YELLOW}Once done, export your report (HTML/JSON), then use the 'Summarize OWASP ZAP Report' option to analyze it with Gemini.${NC}"
 
 }
+summarize_zap_report_ai() {
+    read -p "Enter full path to OWASP ZAP exported report file (.html/.txt/.json): " zap_file
 
+    if [[ ! -f "$zap_file" ]]; then
+        echo -e "${RED}File not found. Please try again.${NC}"
+        return
+    fi
 
+    zap_content=$(cat "$zap_file")
+    generate_ai_insights "OWASP ZAP" "Web application security scan report" "$zap_content"
+}
 
 # Function to run John the Ripper
 run_john() {
@@ -342,21 +341,18 @@ log_message() {
 run_wapiti() {
     OUTPUT_DIR=$1
     output_file="${OUTPUT_DIR}/wapiti_output.txt"
-    echo "running Wapiti..." >> $LOG_FILE
+
     read -p "Enter the URL to scan: " url
 
     if [[ "$output_to_file" == "y" ]]; then
         # Run Wapiti scan
-        wapiti_ai_output=$(wapiti -u "$url" -o "$output_file")
+        wapiti_output=$(wapiti -u "$url" -o "$output_file")
     else
         # Run Wapiti scan
-        wapiti_ai_output=$(wapiti -u "$url")
+        wapiti_output=$(wapiti -u "$url")
     fi
-    echo "$wapiti_ai_output" 
-    echo "$wapiti_ai_output" > "$output_file"
-    echo "Wapiti output saved to $output_file" >> $LOG_FILE
-    echo "Wapiti scan completed." >> $LOG_FILE
-    generate_ai_insights "$wapiti_ai_output"
+    
+    generate_ai_insights "$wapiti_output"
     echo -e "${GREEN}Wapiti scan completed. Results saved to $output_file.${NC}"
 }
 

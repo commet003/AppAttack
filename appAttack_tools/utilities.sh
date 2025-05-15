@@ -1,144 +1,71 @@
 #!/bin/bash
-# Define the log file path where the script logs messages
-LOG_FILE="$HOME/security_tools.log"
 
-install_generate_ai_insights_dependencies() {
-    # Check if jq is installed
-    if ! command -v jq &> /dev/null; then
-        echo -e "${MAGENTA}Intalling generate AI insights dependencies...${NC}"
-        
-        # Update package list and install jq
-        sudo apt-get update
-        sudo apt-get install -y jq
-    else
-        echo -e "${GREEN}Generate AI insights dependencies are already installed.${NC}"
-    fi
-}
+# Configuration
+API_KEY="AIzaSyBAR-3N6lr-XtE-faIfprOIVEy0_ybbvlA"
+API_URL="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+LOG_FILE="./debug.log"
 
-# Function to save vulnerabilities found by various tools to a file
-save_vulnerabilities() {
-    # Set the tool name to the first argument
-    local tool=$1
-    # Set the output file name based on the tool name
-    local output_file="$tool-vulnerabilities.txt"
-    # Determine the command to run based on the tool name
-    case $tool in
-        "osv-scanner")
-            # Scan the directory using osv-scanner and save output to the file
-            osv-scanner scan "./$directory" > "$output_file"
-        ;;
-        "snyk")
-            # Run snyk code scan and save output to the file
-            snyk code scan > "$output_file"
-        ;;
-        "brakeman")
-            # Run brakeman scan and save output to the file
-            sudo brakeman --force > "$output_file"
-        ;;
-        "nmap")
-            # Run nmap scan and save output to the file
-            nmap -v -A "$url" > "$output_file"
-        ;;
-        "nikto")
-            # Run nikto scan and save output to the file
-            nikto -h "$url" > "$output_file"
-        ;;
-        "legion")
-            # Run legion scan and save output to the file
-            legion "$url" > "$output_file"
-        ;;
-        "john")
-            # Run John the Ripper and save output to the file
-            john --show --format=raw-md5 "$input_file" > "$output_file"
-        ;;
-        "sqlmap")
-            # Run SQLmap scan and save output to the file
-            sqlmap -u "$url" --batch --output-dir="$output_dir" > "$output_file"
-        ;;
-        "metasploit")
-            # Run Metasploit scan and save output to the file
-            msfconsole -x "use auxiliary/scanner/portscan/tcp; set RHOSTS $url; run; exit" > "$output_file"
-        ;;
-	"wapiti")
-            # Run Wapiti scan and save output to the file
-            wapiti -u "$url" -o "$output_file"
-        ;;
-        *)
-            echo -e "${RED}Unsupported tool: $tool${NC}"
-            return 1
-        ;;
-    esac
-    # Display the found vulnerabilities
-    echo -e "${GREEN}Vulnerabilities found:${NC}"
-    cat "$output_file"
-    # Prompt user to save the vulnerabilities to a file
-    read -p "Do you want to save the vulnerabilities to a file? (y/n) " save_to_file
-    if [[ "$save_to_file" == "y" ]]; then
-        # Display message indicating the file has been saved
-        echo -e "${GREEN}Vulnerabilities saved to $output_file${NC}"
-    else
-        # Display message indicating the file was not saved
-        echo -e "${GREEN}Vulnerabilities not saved to a file.${NC}"
-    fi
-}
+# Prompt generator (accuracy-focused)
+generate_gemini_prompt() {
+    local tool_name="$1"
+    local description="$2"
+    local scan_output="$3"
 
-# Function to get and print AI-generated insights based on tool outputs
-generate_ai_insights() {
-    local output="$1" # Tool output
-    local output_to_file="$2" # Output to file (either y or n)
-    local output_file="$3" # Output file directory
-    
-    read -p "Do you want to get AI-generated insights on the scan? (y/n): " ai_insights
-
-    if [[ "$ai_insights" == "y" ]]; then
-        # Use existing Google Gemini API key or replace with your own one
-        API_KEY="AIzaSyBaGoV4EC9vhhypqeB5lG1OEkT-SsT_1tw"
-
-        # Escape special characters in the output to safely include it in JSON
-        escaped_output=$(echo "$output" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
-
-        # Format the data for the Gemini API
-        PROMPT="Analyze this output and provide insights: $escaped_output"
-        
-        # Call Gemini API using curl
-        RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$API_KEY" \
-        -H "Content-Type: application/json" \
-        -d '{
-            "contents": [
-              {
-                "parts": [
-                  {
-                    "text": "'"$PROMPT"'"
-                  }
-                ]
-              }
+    cat <<EOF
+{
+    "contents": [
+        {
+            "parts": [
+                {
+                    "text": "You are a cybersecurity analyst assistant. Your task is to summarize real scan results from the tool below. Do not guess, add assumptions, or invent data.\n\nTool Used: $tool_name\nDescription: $description\n\nScan Output:\n$scan_output\n\nPlease respond in **this exact plain text format**, no bold or formatting:\n\nThreats: <summary of threats>\nWhy it Matters: <summary of risk>\nAction Needed: <summary of recommendation>\n\nImportant:\n- DO NOT use any formatting like markdown (**), colors, or escape codes\n- DO NOT return any \\\\033[...], \\\\x1B, or ANSI color\n- Just return clean plain text, 1 line per section"
+                }
             ]
-        }')
-        
-        # Uncomment below for debugging
-        #echo "Response:"
-        #echo "$RESPONSE"
-        
-        # Extract the insights from the API response
-        INSIGHTS=$(echo $RESPONSE | jq -r '.candidates[0].content.parts[0].text')
-        
-        # Append the AI-generated insights to the output file if saved to file
-        if [[ "$output_to_file" == "y" ]]; then
-            echo -e "\nAI-Generated Insights:\n$INSIGHTS" >> "$output_file"
-        else
-            # Display the AI-generated insights
-            #display_asterisk
-            echo -e "${YELLOW}"
-            echo -e "+-----------------------------+"
-            echo -e "|          Insights           |"
-            echo -e "+-----------------------------+"
-            echo -e "${BLUE}"
-            echo -e "$INSIGHTS"
-            echo -e "${NC}"
-            echo -e "${YELLOW}"
-            echo -e "+-----------------------------+"
+        }
+    ]
+}
+EOF
+}
 
-            #display_asterisk
-        fi
-    fi
+# Gemini API call
+generate_ai_insights() {
+    local tool="$1"
+    local description="$2"
+    local scan_output="$3"
+
+    # Style definitions
+    BOLD=$(tput bold)
+    NORMAL=$(tput sgr0)
+    GREEN="\033[1;32m"
+    CYAN="\033[1;36m"
+    YELLOW="\033[1;33m"
+    RESET="\033[0m"
+
+    echo "[INFO] Preparing prompt for Gemini ($tool)" >> "$LOG_FILE"
+
+    PROMPT=$(generate_gemini_prompt "$tool" "$description" "$scan_output")
+
+    RESPONSE=$(curl -s -X POST "$API_URL?key=$API_KEY" \
+        -H "Content-Type: application/json" \
+        -d "$PROMPT")
+
+    echo "[DEBUG] Gemini API response:" >> "$LOG_FILE"
+    echo "$RESPONSE" >> "$LOG_FILE"
+
+    INSIGHTS=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text')
+    [[ -z "$INSIGHTS" || "$INSIGHTS" == "null" ]] && INSIGHTS="No actionable insights."
+
+    # Print formatted AI insight block
+    echo -e "\n${CYAN}+-----------------------------+"
+    echo -e "|        ${BOLD}AI Insights${NORMAL}${CYAN}          |"
+    echo -e "+-----------------------------+${RESET}"
+    echo -e "${BOLD}Tool Used:${NORMAL} $tool"
+    echo -e "${BOLD}Description:${NORMAL} $description"
+    echo -e "\n${YELLOW}${BOLD}Generated Insights:${NORMAL}${RESET}"
+
+    # Highlight markdown-style sections
+    echo -e "$INSIGHTS" | sed -E "s/\*\*Threats:\*\*/${BOLD}${GREEN}Threats:${RESET}/g" \
+                   | sed -E "s/\*\*Why it Matters:\*\*/${BOLD}${CYAN}Why it Matters:${RESET}/g" \
+                   | sed -E "s/\*\*Action Needed:\*\*/${BOLD}${YELLOW}Action Needed:${RESET}/g"
+
+    echo -e "${CYAN}+-----------------------------+${RESET}"
 }
