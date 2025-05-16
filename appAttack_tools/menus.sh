@@ -1,6 +1,13 @@
 
 #!/bin/bash
 
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/automate_recon.sh"
+
+
+
+
 # Display the Banner
 echo -e "${BYellow}                                                                           ${Color_Off}"
 echo -e "${BRed} █████╗ ██████╗ ██████╗     █████╗ ████████╗████████╗ █████╗  ██████╗██╗  ██╗${Color_Off}"
@@ -264,7 +271,9 @@ handle_step_by_step_guide(){
 handle_automated_processes_menu() {
     local choice
     while true; do
-        display_automated_processes_menu
+     
+
+   display_automated_processes_menu
         read -p "Choose an option: " choice
         case $choice in
             1) run_automated_reconnaissance_scan ;; # Placeholder for Reconnaissance
@@ -281,7 +290,7 @@ handle_automated_processes_menu() {
 # Placeholder functions for automated processes (to be implemented later)
 run_automated_reconnaissance_scan() {
     echo "Running Automated Reconnaissance Scan..."
-   "$SCRIPT_DIR/automate_reconnaissance.sh" # Execute  automate_reconnaissance.sh script
+   "run_reconnaissance_menu" # Execute  automate_reconnaissance.sh script
 }
 
 run_vulnerability_scanning_process() {

@@ -19,6 +19,11 @@ source "$SCRIPT_DIR/utilities.sh"
 source "$SCRIPT_DIR/step_by_step.sh"
 source "$SCRIPT_DIR/automate.sh"
 
+
+
+
+
+
 # Main function to check and install tools
 main() {
     
