@@ -209,10 +209,11 @@ run_sqlmap() {
     read -p "Enter URL to scan (e.g., http://example.com/vuln.php?id=1): " url
 
     if [[ "$output_to_file" == "y" ]]; then
-        sqlmap -u "$url" --output-dir="$output_file" > "$output_file" 2>&1
-        sqlmap_output=$(cat "$output_file") # Capture the output
+        # Use tee to show in terminal AND save to file
+        sqlmap_output=$(sqlmap -u "$url" --batch 2>&1 | tee "$output_file")
     else
-        sqlmap_output=$(sqlmap -u "$url" 2>&1) # Capture output to variable
+        # Just show in terminal, no output file
+        sqlmap_output=$(sqlmap -u "$url" --batch 2>&1)
         echo "$sqlmap_output"
     fi
 
@@ -221,6 +222,7 @@ run_sqlmap() {
     # Call the function to generate AI insights based on sqlmap output
     generate_ai_insights "$sqlmap_output" "$output_to_file" "$output_file"
 }
+
 
 
 # Function to run Metasploit
