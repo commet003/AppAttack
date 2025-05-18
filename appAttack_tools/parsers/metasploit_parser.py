@@ -18,7 +18,7 @@ def parse_metasploit_output(text):
         # Remove trailing/leading whitespace
         line = line.strip()
 
-        # Skip file listings or garbage
+        # Skip file listings 
         if not line:
             continue
         if re.search(r"\.(sh|md|txt|zip|LICENSE|log|json)", line, re.IGNORECASE):
