@@ -227,10 +227,8 @@ run_john() {
     fi
 
     # Call the function to generate AI insights based on John the Ripper output
-    generate_ai_insights "generate_ai_insights "$john_output"" "$output_to_file" "$output_file" "$output_to_file" "$output_file"
+    generate_ai_insights "$john_output" "$output_to_file" "$output_file"
     echo -e "${GREEN} John the Ripper operation completed.${NC}"
-
-
 }
 
 
@@ -242,17 +240,18 @@ run_sqlmap() {
     read -p "Enter URL to scan (e.g., http://example.com/vuln.php?id=1): " url
 
     if [[ "$output_to_file" == "y" ]]; then
-        sqlmap -u "$url" --output-dir="$output_file" > "$output_file" 2>&1
-        sqlmap_output=$(cat "$output_file") # Capture the output
+        # Use tee to show in terminal AND save to file
+        sqlmap_output=$(sqlmap -u "$url" --batch 2>&1 | tee "$output_file")
     else
-        sqlmap_output=$(sqlmap -u "$url" 2>&1) # Capture output to variable
+        # Just show in terminal, no output file
+        sqlmap_output=$(sqlmap -u "$url" --batch 2>&1)
         echo "$sqlmap_output"
     fi
 
     echo -e "${GREEN} SQLmap operation completed.${NC}"
 
     # Call the function to generate AI insights based on sqlmap output
-    generate_ai_insights "generate_ai_insights "$sqlmap_output"" "$output_to_file" "$output_file" "$output_to_file" "$output_file"
+    generate_ai_insights "$sqlmap_output" "$output_to_file" "$output_file"
 }
 
 # Function to run Metasploit
@@ -365,20 +364,32 @@ log_message() {
 # Function to run Wapiti
 run_wapiti() {
     OUTPUT_DIR=$1
-    output_file="${OUTPUT_DIR}/wapiti_output.txt"
-    echo "running Wapiti..." >> $LOG_FILE
+    OUTPUT_SUBDIR="${OUTPUT_DIR}/wapiti_output"
+    LOG_TXT="${OUTPUT_DIR}/wapiti_output.txt"
+    
+    echo "running Wapiti..." >> "$LOG_FILE"
     read -p "Enter the URL to scan: " url
 
+    mkdir -p "$OUTPUT_SUBDIR"
+
     if [[ "$output_to_file" == "y" ]]; then
-        # Run Wapiti scan
-        wapiti_ai_output=$(wapiti -u "$url" -o "$output_file")
+        # Run Wapiti scan and output to directory
+        wapiti -u "$url" -o "$OUTPUT_SUBDIR" > "$LOG_TXT"
     else
-        # Run Wapiti scan
-        wapiti_ai_output=$(wapiti -u "$url")
+        # Run Wapiti scan without saving output to txt
+        wapiti -u "$url" -o "$OUTPUT_SUBDIR"
     fi
-    
-    generate_ai_insights "generate_ai_insights "$wapiti_output"" "$output_to_file" "$output_file"
-    echo -e "${GREEN}Wapiti scan completed. Results saved to $output_file.${NC}"
+
+    echo "Wapiti output saved to $LOG_TXT" >> "$LOG_FILE"
+    echo "Wapiti scan completed." >> "$LOG_FILE"
+
+    # If you want AI insights from the log file
+    if [[ "$output_to_file" == "y" ]]; then
+        wapiti_ai_output=$(<"$LOG_TXT")
+        generate_ai_insights "$wapiti_ai_output"
+    fi
+
+    echo -e "${GREEN}Wapiti scan completed. Results saved to $OUTPUT_SUBDIR and log saved to $LOG_TXT.${NC}"
 }
 
 run_wapiti_automated() {
