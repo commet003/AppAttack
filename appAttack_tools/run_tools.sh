@@ -32,8 +32,6 @@ run_nmap(){
         fi
         echo "$nmap_ai_output"
         echo "$nmap_ai_output" > "$output_file"
-        echo "$nmap_ai_output" > "/tmp/nmap_ai_output.txt"
-        output_file="/tmp/nmap_ai_output.txt"
     fi
     echo "$nmap_ai_output" >> "$LOG_FILE"
     echo "Nmap scan completed." >> "$LOG_FILE"
@@ -176,48 +174,31 @@ run_owasp_zap() {
 
 }
 
+
+
+# Function to run John the Ripper
 run_john() {
     OUTPUT_DIR=$1
-
-    # Use a temp directory if OUTPUT_DIR is not set
-    if [[ -z "$OUTPUT_DIR" ]]; then
-        OUTPUT_DIR="/tmp/john_temp_$(date +%s)"
-        mkdir -p "$OUTPUT_DIR"
-    fi
-
     output_file="${OUTPUT_DIR}/john_output.txt"
-    hash_file="${OUTPUT_DIR}/john_hash.txt"
 
+    read -p "Enter the path to the password file to crack: " password_file
 
-    read -p "Enter file to crack (.docx, .pdf, .zip, or .hash): " file_path
-
-    # Step 1: Extract hash if needed
-    if [[ "$file_path" == *.docx || "$file_path" == *.xlsx || "$file_path" == *.xls ]]; then
-        python3 /usr/share/john/office2john.py "$file_path" > "$hash_file"
-    elif [[ "$file_path" == *.pdf ]]; then
-        python3 /usr/share/john/pdf2john.py "$file_path" > "$hash_file"
-    elif [[ "$file_path" == *.zip ]]; then
-        zip2john "$file_path" > "$hash_file"
+    if [[ "$output_to_file" == "y" ]]; then
+        # Capture the output of john to a file
+        john --session="$output_file" "$password_file" > "$output_file" 2>&1
+        john_output=$(cat "$output_file")
     else
-        cp "$file_path" "$hash_file"
+        # Capture the output of john to a variable
+        john_output=$(john "$password_file" 2>&1)
+        echo "$john_output"
     fi
 
-    # Step 2: Use local wordlist, you can add any wordlist to wordlist_for_John and update it here. 
-    wordlist="$SCRIPT_DIR/wordlist_for_John/test_wordlist.txt"
-    if [[ ! -f "$wordlist" ]]; then
-        echo -e "${RED}Wordlist not found at $wordlist. Aborting.${NC}"
-        return
-    fi
+    # Call the function to generate AI insights based on John the Ripper output
+    generate_ai_insights "$john_output" "$output_to_file" "$output_file"
+    echo -e "${GREEN} John the Ripper operation completed.${NC}"
 
-    john --wordlist="$wordlist" "$hash_file" > "$output_file" 2>&1
-    john_show=$(john --show "$hash_file")
-    echo "$john_show" >> "$output_file"
 
-    generate_ai_insights "$john_show" "$output_to_file" "$output_file" "john"
-
-    echo -e "${GREEN}John the Ripper operation completed.${NC}"
 }
-
 
 
 # Function to run sqlmap
@@ -228,10 +209,11 @@ run_sqlmap() {
     read -p "Enter URL to scan (e.g., http://example.com/vuln.php?id=1): " url
 
     if [[ "$output_to_file" == "y" ]]; then
-        sqlmap -u "$url" --output-dir="$output_file" > "$output_file" 2>&1
-        sqlmap_output=$(cat "$output_file") # Capture the output
+        # Use tee to show in terminal AND save to file
+        sqlmap_output=$(sqlmap -u "$url" --batch 2>&1 | tee "$output_file")
     else
-        sqlmap_output=$(sqlmap -u "$url" 2>&1) # Capture output to variable
+        # Just show in terminal, no output file
+        sqlmap_output=$(sqlmap -u "$url" --batch 2>&1)
         echo "$sqlmap_output"
     fi
 
@@ -241,33 +223,20 @@ run_sqlmap() {
     generate_ai_insights "$sqlmap_output" "$output_to_file" "$output_file"
 }
 
+
+
+# Function to run Metasploit
 run_metasploit() {
     OUTPUT_DIR=$1
-    output_to_file=$2
+    output_file="${OUTPUT_DIR}/metasploit_output.txt"
 
-    # Decide file path: permanent or temporary
     if [[ "$output_to_file" == "y" ]]; then
-        output_file="${OUTPUT_DIR}/metasploit_output.txt"
+        sudo msfconsole | tee "$output_file"
     else
-        TEMP_DIR="/tmp/metasploit_temp_$(date +%s)"
-        mkdir -p "$TEMP_DIR"
-        output_file="${TEMP_DIR}/metasploit_output.txt"
+        sudo msfconsole
     fi
-
-    # Run Metasploit and capture output
-    sudo msfconsole | tee "$output_file"
-
-    echo -e "${GREEN}Metasploit operation completed.${NC}"
-
-    # Always generate AI insights, regardless of save preference
-    generate_ai_insights "$(cat "$output_file")" "$output_to_file" "$output_file" "metasploit"
-
-    # Clean up temp file if user didn't want to save it
-    if [[ "$output_to_file" != "y" ]]; then
-        rm -rf "$TEMP_DIR"
-    fi
+    echo -e "${GREEN} Metasploit operation completed.${NC}"
 }
-
 
 # Function to run osv-scanner
 run_osv_scanner(){
@@ -372,27 +341,38 @@ log_message() {
     echo "$(date +"%Y-%m-%d %H:%M:%S") - $message" >> "$LOG_FILE"
 }
 
+
 # Function to run Wapiti
 run_wapiti() {
     OUTPUT_DIR=$1
-    output_file="${OUTPUT_DIR}/wapiti_output.txt"
-    echo "running Wapiti..." >> $LOG_FILE
+    OUTPUT_SUBDIR="${OUTPUT_DIR}/wapiti_output"
+    LOG_TXT="${OUTPUT_DIR}/wapiti_output.txt"
+    
+    echo "running Wapiti..." >> "$LOG_FILE"
     read -p "Enter the URL to scan: " url
 
+    mkdir -p "$OUTPUT_SUBDIR"
+
     if [[ "$output_to_file" == "y" ]]; then
-        # Run Wapiti scan
-        wapiti_ai_output=$(wapiti -u "$url" -o "$output_file")
+        # Run Wapiti scan and output to directory
+        wapiti -u "$url" -o "$OUTPUT_SUBDIR" > "$LOG_TXT"
     else
-        # Run Wapiti scan
-        wapiti_ai_output=$(wapiti -u "$url")
+        # Run Wapiti scan without saving output to txt
+        wapiti -u "$url" -o "$OUTPUT_SUBDIR"
     fi
-    echo "$wapiti_ai_output" 
-    echo "$wapiti_ai_output" > "$output_file"
-    echo "Wapiti output saved to $output_file" >> $LOG_FILE
-    echo "Wapiti scan completed." >> $LOG_FILE
-    generate_ai_insights "$wapiti_ai_output"
-    echo -e "${GREEN}Wapiti scan completed. Results saved to $output_file.${NC}"
+
+    echo "Wapiti output saved to $LOG_TXT" >> "$LOG_FILE"
+    echo "Wapiti scan completed." >> "$LOG_FILE"
+
+    # If you want AI insights from the log file
+    if [[ "$output_to_file" == "y" ]]; then
+        wapiti_ai_output=$(<"$LOG_TXT")
+        generate_ai_insights "$wapiti_ai_output"
+    fi
+
+    echo -e "${GREEN}Wapiti scan completed. Results saved to $OUTPUT_SUBDIR and log saved to $LOG_TXT.${NC}"
 }
+
 
 
 # Function to run TShark (Wireshark CLI)
