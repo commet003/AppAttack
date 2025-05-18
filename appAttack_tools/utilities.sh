@@ -88,7 +88,7 @@ save_vulnerabilities() {
         ;;
         "john")
             # Run John the Ripper and save output to the file
-            john --show --format=raw-md5 "$input_file" > "$output_file"
+            run_john "$OUTPUT_DIR"
         ;;
         "sqlmap")
             # Run SQLmap scan and save output to the file
@@ -133,10 +133,14 @@ generate_ai_insights() {
 
     if [[ "$ai_insights" == "y" ]]; then
         API_KEY="$GEMINI_API_KEY"
-        
-         if [ -z "$API_KEY" ]; then
-            echo "❌ Error: GEMINI_API_KEY is not set. Please check your .env file."
-            return 1
+        tool_parser="parsers/${tool}_parser.py"
+        if [[ -f "$tool_parser" ]]; then
+            PYTHON_RESPONSE=$(python3 "$tool_parser" "$output_file")
+            PROMPT=$(echo "$PYTHON_RESPONSE" | jq -r '.prompt')
+        else
+        # Fallback to raw output if parser not found
+            escaped_output=$(echo "$output" | sed 's/"/\\"/g')
+            PROMPT="Analyze this output and provide insights: $escaped_output"
         fi
 
 
@@ -224,9 +228,19 @@ generate_ai_insights() {
         esac
 
 
-        RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$API_KEY" \
+        RESPONSE=$(curl -s -X POST  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$API_KEY" \
         -H "Content-Type: application/json" \
-        -d '{"contents": [{"parts": [{"text": "'"$PROMPT"'"}]}]}' )
+        -d '{
+            "contents": [
+              {
+                "parts": [
+                  {
+                    "text": "'"$PROMPT"'"
+                  }
+                ]
+              }
+            ]
+        }')
         
         INSIGHTS=$(echo $RESPONSE | jq -r '.candidates[0].content.parts[0].text')
         

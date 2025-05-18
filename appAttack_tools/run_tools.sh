@@ -254,6 +254,8 @@ run_sqlmap() {
     generate_ai_insights "$sqlmap_output" "$output_to_file" "$output_file"
 }
 
+
+
 # Function to run Metasploit
 run_metasploit() {
     OUTPUT_DIR=$1
@@ -361,6 +363,7 @@ log_message() {
     echo "$(date +"%Y-%m-%d %H:%M:%S") - $message" >> "$LOG_FILE"
 }
 
+
 # Function to run Wapiti
 run_wapiti() {
     OUTPUT_DIR=$1
@@ -402,6 +405,7 @@ run_wapiti_automated() {
     generate_ai_insights "$wapiti_ai_output"
     echo "Wapiti report saved to $output_file"
 }
+
 
 
 # Function to run TShark (Wireshark CLI)

@@ -53,7 +53,7 @@ auto_nikto() {
     echo "Nikto scan completed." >> $LOG_FILE
 }
 
-# Function to run OWASP ZAP
+# Function to run OWASP ZAP automatically in headless mode
 auto_zap() {
     echo "[*] Running OWASP ZAP..." | tee -a "$LOG_FILE"
 
@@ -85,6 +85,8 @@ auto_zap() {
     # Optional: Feed results to summarizer/AI pipeline
     # summarize_zap_output "$zap_output_file"
 }
+
+
 
 # Function to run Wapiti
 auto_wapiti() {
