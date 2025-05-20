@@ -3,9 +3,11 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/automate_recon.sh"
-source "$SCRIPT_DIR/automate_scanning.sh"
-source "$SCRIPT_DIR/automate_exploitation.sh"
+source "$SCRIPT_DIR/automate_reconnaissance.sh"
+source "$SCRIPT_DIR/automate_vulnerability_scan.sh"
+source "$SCRIPT_DIR/auto_exploitation.sh"
 source "$SCRIPT_DIR/automate_post_exploitation.sh"
+source "$SCRIPT_DIR/automate_reporting.sh"
 
 
 
